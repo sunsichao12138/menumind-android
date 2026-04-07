@@ -154,8 +154,17 @@ router.post("/recommend", async (req: Request, res: Response) => {
         }
       }
 
-      return { ...r, _score: tagScore + inventoryScore, _inventoryMatched: matchedCount };
+      return { ...r, _tagScore: tagScore, _score: tagScore + inventoryScore, _inventoryMatched: matchedCount };
     });
+
+    // 先硬筛：只保留至少有1个标签匹配的菜谱（确保"饮品"不会出现菜）
+    const tagMatched = candidates.filter((r: any) => r._tagScore > 0);
+    if (tagMatched.length >= 3) {
+      candidates = tagMatched;
+      console.log(`[AI] Hard tag filter: kept ${candidates.length} tag-matched recipes`);
+    } else {
+      console.log(`[AI] Hard tag filter: only ${tagMatched.length} matched, keeping all ${candidates.length}`);
+    }
 
     // 按分数排序，取前 15 个
     candidates.sort((a: any, b: any) => b._score - a._score);
