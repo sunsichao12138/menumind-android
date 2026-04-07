@@ -29,7 +29,7 @@ router.get("/", async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/recipes/:id - 获取菜谱详情
+// GET /api/recipes/:id - 获取菜谱详情（含用户库存匹配）
 router.get("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -45,7 +45,38 @@ router.get("/:id", async (req: Request, res: Response) => {
       return;
     }
 
-    res.json(formatRecipe(data));
+    const formatted = formatRecipe(data);
+
+    // 如果请求带有用户身份，实时匹配库存
+    const userId = (req as any).userId;
+    if (userId) {
+      const { data: userIngs } = await supabase
+        .from("ingredients")
+        .select("name")
+        .eq("user_id", userId);
+
+      if (userIngs && userIngs.length > 0) {
+        const inventoryNames = userIngs.map((i: any) => i.name);
+        // 合并所有食材（have + missing 都是食材列表）
+        const allIngredients = [
+          ...(formatted.ingredients.have || []),
+          ...(formatted.ingredients.missing || []),
+        ];
+        const realHave: any[] = [];
+        const realMissing: any[] = [];
+        for (const ing of allIngredients) {
+          if (ing.name && inventoryNames.includes(ing.name)) {
+            realHave.push(ing);
+          } else {
+            realMissing.push(ing);
+          }
+        }
+        formatted.ingredients = { have: realHave, missing: realMissing };
+        formatted.inventoryMatch = realHave.length;
+      }
+    }
+
+    res.json(formatted);
   } catch (err: any) {
     console.error("GET /api/recipes/:id error:", err.message);
     res.status(500).json({ error: err.message });
