@@ -157,9 +157,9 @@ router.post("/recommend", async (req: Request, res: Response) => {
       return { ...r, _score: tagScore + inventoryScore, _inventoryMatched: matchedCount };
     });
 
-    // 按分数排序，取前 8 个（减少发送给AI的数据量，避免超时）
+    // 按分数排序，取前 15 个
     candidates.sort((a: any, b: any) => b._score - a._score);
-    candidates = candidates.slice(0, 8);
+    candidates = candidates.slice(0, 15);
 
     console.log(`[AI] Stage 1: Filtered ${candidates.length} candidates from ${allRecipes?.length || 0} total recipes`);
     console.log(`[AI] Top candidates: ${candidates.slice(0, 5).map((c: any) => `${c.name}(score=${c._score},inv=${c._inventoryMatched})`).join(", ")}`);
@@ -231,18 +231,52 @@ ${candidateSummary}
 
     console.log(`[AI] Stage 2: Calling model ${modelId} to rank candidates`);
 
-    // 40秒超时，防止 Vercel 60s 限制
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 40000);
+    // ── 构建 Stage 1 直接返回的降级函数 ──
+    const buildFallbackFromStage1 = () => {
+      console.log(`[AI] Fallback: returning top 3 from Stage 1 scoring`);
+      const top3 = candidates.slice(0, 3);
+      return top3.map((c: any) => {
+        const allIngs = [...(c.ingredients_have || []), ...(c.ingredients_missing || [])];
+        const realHave: any[] = [];
+        const realMissing: any[] = [];
+        for (const ing of allIngs) {
+          if (ing.name && inventoryNames.includes(ing.name)) {
+            realHave.push(ing);
+          } else {
+            realMissing.push(ing);
+          }
+        }
+        return {
+          id: c.id,
+          name: c.name,
+          description: c.description || "",
+          image: c.image || "",
+          tags: c.tags || [],
+          time: c.time || "",
+          difficulty: c.difficulty || "",
+          calories: c.calories || "",
+          recommendationReason: `根据您的库存智能匹配（匹配${realHave.length}种食材）`,
+          matchPercentage: allIngs.length > 0 ? Math.round((realHave.length / allIngs.length) * 100) : 60,
+          inventoryMatch: realHave.length,
+          ingredients: { have: realHave, missing: realMissing },
+          steps: c.steps || [],
+        };
+      });
+    };
 
-    let response: any;
+    // ── 调用 AI（20秒超时）──
+    let aiSelections: any[] | null = null;
     try {
-      response = await fetch(arkEndpoint, {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 20000);
+
+      const response = await fetch(arkEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${apiKey}`,
         },
+        signal: controller.signal,
         body: JSON.stringify({
           model: modelId,
           messages: [
@@ -255,34 +289,32 @@ ${candidateSummary}
           temperature: 0.5,
           max_tokens: 1024,
         }),
-        signal: controller.signal,
       });
-    } catch (fetchErr: any) {
       clearTimeout(timeout);
-      // AI 超时，使用本地排序结果
-      console.log(`[AI] Stage 2 timeout/error, falling back to local scoring`);
-      return localFallback(candidates, inventoryNames, res);
-    }
-    clearTimeout(timeout);
 
-    if (!response.ok) {
-      const errBody = await response.text();
-      console.error(`[AI] Ark API error (${response.status}):`, errBody);
-      throw new Error(`Ark API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const text = data.choices?.[0]?.message?.content || "";
-
-    console.log(`[AI] Model response received, usage: ${JSON.stringify(data.usage || {})}`);
-
-    // 提取 JSON
-    let jsonStr = text.trim();
-    if (jsonStr.startsWith("```")) {
-      jsonStr = jsonStr.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
+      if (!response.ok) {
+        const errBody = await response.text();
+        console.error(`[AI] Ark API error (${response.status}):`, errBody);
+      } else {
+        const data = await response.json();
+        const text = data.choices?.[0]?.message?.content || "";
+        console.log(`[AI] Model response received, usage: ${JSON.stringify(data.usage || {})}`);
+        let jsonStr = text.trim();
+        if (jsonStr.startsWith("```")) {
+          jsonStr = jsonStr.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
+        }
+        aiSelections = JSON.parse(jsonStr);
+      }
+    } catch (aiErr: any) {
+      console.warn(`[AI] Stage 2 failed (${aiErr.name === 'AbortError' ? 'timeout 20s' : aiErr.message}), falling back to Stage 1 results`);
     }
 
-    const aiSelections = JSON.parse(jsonStr);
+    // ── AI 失败时用 Stage 1 排序直接返回 ──
+    if (!aiSelections || !Array.isArray(aiSelections) || aiSelections.length === 0) {
+      const fallback = buildFallbackFromStage1();
+      console.log(`[AI] Returned ${fallback.length} recipes from Stage 1 fallback`);
+      return res.json(fallback);
+    }
 
     // ════════════════════════════════════════
     // 拼接最终结果
@@ -353,40 +385,6 @@ ${candidateSummary}
   }
 });
 
-// 本地排序兜底：不调用 AI，直接取分数最高的 3 道
-function localFallback(candidates: any[], inventoryNames: string[], res: Response) {
-  const top3 = candidates.slice(0, 3);
-  const results = top3.map((c: any) => {
-    const allIngs = [...(c.ingredients_have || []), ...(c.ingredients_missing || [])];
-    const realHave: any[] = [];
-    const realMissing: any[] = [];
-    for (const ing of allIngs) {
-      if (ing.name && inventoryNames.includes(ing.name)) {
-        realHave.push(ing);
-      } else {
-        realMissing.push(ing);
-      }
-    }
-    return {
-      id: c.id,
-      name: c.name,
-      description: c.description || "",
-      image: c.image || "",
-      tags: c.tags || [],
-      time: c.time || "",
-      difficulty: c.difficulty || "",
-      calories: c.calories || "",
-      recommendationReason: `匹配您的库存食材，评分${c._score}分`,
-      matchPercentage: Math.min(95, 60 + (c._inventoryMatched || 0) * 10),
-      inventoryMatch: realHave.length,
-      ingredients: { have: realHave, missing: realMissing },
-      steps: c.steps || [],
-    };
-  });
-  console.log(`[AI] Local fallback: returned ${results.length} recipes`);
-  res.json(results);
-}
-
 // ── 回退：候选不足时完整生成 ──
 async function fullGeneration(
   req: Request, res: Response,
@@ -446,9 +444,6 @@ ${ingredientList || "暂无食材"}
 
   console.log(`[AI] Full generation mode with model: ${modelId}`);
 
-  const fgController = new AbortController();
-  const fgTimeout = setTimeout(() => fgController.abort(), 45000);
-
   const response = await fetch(arkEndpoint, {
     method: "POST",
     headers: {
@@ -465,11 +460,9 @@ ${ingredientList || "暂无食材"}
         { role: "user", content: prompt },
       ],
       temperature: 0.7,
-      max_tokens: 2048,
+      max_tokens: 4096,
     }),
-    signal: fgController.signal,
   });
-  clearTimeout(fgTimeout);
 
   if (!response.ok) {
     const errBody = await response.text();
