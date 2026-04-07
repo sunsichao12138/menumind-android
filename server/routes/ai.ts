@@ -85,10 +85,11 @@ router.post("/recommend", async (req: Request, res: Response) => {
       .eq("user_id", req.userId!)
       .single();
 
-    // 3) 从菜谱库筛选候选
+    // 3) 从菜谱库筛选候选（排除旧 AI 生成菜谱，只用种子菜谱）
     const { data: allRecipes } = await supabase
       .from("recipes")
       .select("*")
+      .not("id", "like", "ai_%")
       .order("created_at", { ascending: false });
 
     const sceneTags = getSceneTags(mealType || "正餐");
