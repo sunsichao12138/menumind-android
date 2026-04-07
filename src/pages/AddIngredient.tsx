@@ -95,9 +95,10 @@ export default function AddIngredient({ isOpen, onClose, onAdded }: AddIngredien
             initial={{ y: "100%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0 }}
-            className="relative bg-surface w-full max-w-md rounded-t-[3rem] sm:rounded-[3rem] p-8 shadow-2xl space-y-6 overflow-hidden max-h-[95vh] overflow-y-auto no-scrollbar"
+            className="relative bg-surface w-full max-w-md rounded-t-[3rem] sm:rounded-[3rem] shadow-2xl overflow-hidden max-h-[80vh] flex flex-col"
           >
-            <header className="flex items-center justify-between">
+            {/* 固定头部 */}
+            <header className="flex items-center justify-between px-8 pt-8 pb-4 flex-shrink-0">
               <h1 className="text-2xl font-bold">添加食材</h1>
               <button 
                 onClick={onClose}
@@ -107,6 +108,8 @@ export default function AddIngredient({ isOpen, onClose, onAdded }: AddIngredien
               </button>
             </header>
 
+            {/* 可滚动的表单区域 */}
+            <div className="flex-1 overflow-y-auto px-8 space-y-6 no-scrollbar">
             <section className="grid grid-cols-2 gap-3">
               <button 
                 onClick={() => handleAiFill("camera")}
@@ -124,7 +127,7 @@ export default function AddIngredient({ isOpen, onClose, onAdded }: AddIngredien
               </button>
             </section>
 
-            <form className="space-y-4 pb-4">
+            <form className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">食材名称</label>
                 <div className="flex gap-2">
@@ -227,17 +230,21 @@ export default function AddIngredient({ isOpen, onClose, onAdded }: AddIngredien
                 </div>
               </div>
             </form>
+            </div>
 
+            {/* 固定底部按钮 */}
+            <div className="flex-shrink-0 px-8 py-6 bg-surface border-t border-zinc-100">
             <button 
               onClick={handleSubmit}
               disabled={submitting || !formData.name || !formData.amount}
               className={cn(
-                "w-full bg-black text-white py-4 rounded-full font-bold shadow-xl active:scale-95 transition-all mt-4",
+                "w-full bg-black text-white py-4 rounded-full font-bold shadow-xl active:scale-95 transition-all",
                 (submitting || !formData.name || !formData.amount) && "opacity-50 cursor-not-allowed"
               )}
             >
               {submitting ? "添加中..." : "确认添加"}
             </button>
+            </div>
           </motion.div>
         </div>
       )}

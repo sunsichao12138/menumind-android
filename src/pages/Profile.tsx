@@ -129,9 +129,9 @@ export default function Profile() {
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-50/50 pb-24 animate-in fade-in duration-500">
+    <div className="min-h-screen bg-zinc-50/50 pb-28 animate-in fade-in duration-500">
       {/* Header Section */}
-      <header className="bg-white px-6 pt-16 pb-10 rounded-b-[3rem] shadow-sm border-b border-zinc-100 relative overflow-hidden">
+      <header className="bg-white px-6 pt-12 pb-8 rounded-b-[3rem] shadow-sm border-b border-zinc-100 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-40 h-40 bg-zinc-50 rounded-full -mr-20 -mt-20 opacity-50" />
         
         <div className="relative flex items-center gap-6">
@@ -179,7 +179,7 @@ export default function Profile() {
         </div>
       </header>
 
-      <main className="px-6 -mt-6 relative z-10 space-y-6">
+      <main className="px-6 mt-4 relative z-10 space-y-4">
         {/* Quick Stats */}
         <section className="grid grid-cols-2 gap-4">
           <motion.button 
