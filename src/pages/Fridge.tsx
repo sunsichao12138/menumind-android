@@ -53,7 +53,8 @@ export default function Fridge() {
     return matchesCategory && matchesSearch;
   });
 
-  const expiringCount = ingredients.filter(i => i.expiryDays <= 3).length;
+  const expiringCount = ingredients.filter(i => i.expiryDays <= 3 && i.expiryDays > 0).length;
+  const expiredCount = ingredients.filter(i => i.expiryDays <= 0).length;
 
   return (
     <div className="px-6 py-12 space-y-5 animate-in fade-in duration-500">
@@ -75,8 +76,8 @@ export default function Fridge() {
                   <span className="text-[10px] font-bold mt-0.5 text-zinc-300">快过期</span>
                 </div>
                 <div className="flex flex-col items-center justify-center bg-zinc-800 py-3 rounded-2xl">
-                  <span className="text-2xl font-bold text-white">12</span>
-                  <span className="text-[10px] font-bold mt-0.5 text-zinc-300">可做菜单</span>
+                  <span className={cn("text-2xl font-bold", expiredCount > 0 ? "text-orange-400" : "text-white")}>{expiredCount}</span>
+                  <span className="text-[10px] font-bold mt-0.5 text-zinc-300">已过期</span>
                 </div>
               </div>
               <button 
