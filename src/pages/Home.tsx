@@ -20,20 +20,74 @@ export default function Home() {
   const { toggleFavorite, isFavorite } = useFavorites();
   
   const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [loadingRecipes, setLoadingRecipes] = useState(true);
+  const [loadingRecipes, setLoadingRecipes] = useState(false);
+  const [hasRecommendation, setHasRecommendation] = useState(false);
+
+  // 从 localStorage 读取上次 AI 推荐缓存
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("ai_recommend_cache");
+      if (raw) {
+        const cached = JSON.parse(raw);
+        if (cached.recipes && cached.recipes.length > 0) {
+          setRecipes(cached.recipes.slice(0, 3));
+          setHasRecommendation(true);
+        }
+      }
+    } catch {}
+  }, []);
+
+  // 当从 Filters 页返回时，监听 storage 变化刷新
+  useEffect(() => {
+    const handleStorage = () => {
+      try {
+        const raw = localStorage.getItem("ai_recommend_cache");
+        if (raw) {
+          const cached = JSON.parse(raw);
+          if (cached.recipes && cached.recipes.length > 0) {
+            setRecipes(cached.recipes.slice(0, 3));
+            setHasRecommendation(true);
+          }
+        } else {
+          setRecipes([]);
+          setHasRecommendation(false);
+        }
+      } catch {}
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  // 页面可见时重新检查缓存（从 Filters 返回）
+  useEffect(() => {
+    const handleFocus = () => {
+      try {
+        const raw = localStorage.getItem("ai_recommend_cache");
+        if (raw) {
+          const cached = JSON.parse(raw);
+          if (cached.recipes && cached.recipes.length > 0) {
+            setRecipes(cached.recipes.slice(0, 3));
+            setHasRecommendation(true);
+          }
+        }
+      } catch {}
+    };
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") handleFocus();
+    });
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, []);
+
+  // 取最多3个菜谱推荐
+  const recommendedRecipes = recipes;
 
   const [currentTags, setCurrentTags] = useState(() => {
     return [...ALL_TAGS].sort(() => 0.5 - Math.random()).slice(0, 6);
   });
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // 从 API 加载菜谱
-  useEffect(() => {
-    api.get<Recipe[]>("/recipes")
-      .then(setRecipes)
-      .catch((err) => console.error("Failed to load recipes:", err))
-      .finally(() => setLoadingRecipes(false));
-  }, []);
 
   const refreshTags = () => {
     setIsRefreshing(true);
@@ -52,9 +106,6 @@ export default function Home() {
     if (hour < 21) return "晚上好，准备好晚餐了吗 🌙";
     return "夜深了，来点宵夜犒劳下自己？ ✨";
   };
-
-  // 取最多3个菜谱推荐
-  const recommendedRecipes = recipes.slice(0, 3);
 
   return (
     <div className="px-6 py-12 space-y-8 animate-in fade-in duration-500">
@@ -119,11 +170,12 @@ export default function Home() {
         <div className="flex justify-between items-center mb-1">
           <h4 className="font-bold text-lg">菜单推荐</h4>
         </div>
-        <p className="text-xs text-zinc-400 mb-4">先帮你想好 3 个现在适合做的菜，不够再去细选条件。</p>
-        
-        {loadingRecipes ? (
-          <div className="flex justify-center py-12">
-            <div className="w-8 h-8 border-2 border-zinc-200 border-t-black rounded-full animate-spin" />
+
+        {!hasRecommendation ? (
+          <div className="flex flex-col items-center py-10 text-center">
+            <Sparkles size={32} className="text-zinc-300 mb-3" />
+            <p className="text-zinc-400 text-sm font-medium">还没有推荐记录</p>
+            <p className="text-zinc-300 text-xs mt-1">点击上方「开始推荐」获取 AI 推荐菜单</p>
           </div>
         ) : (
           <div className="space-y-4">
