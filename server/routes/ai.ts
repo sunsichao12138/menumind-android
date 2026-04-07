@@ -6,19 +6,35 @@ const router = Router();
 // ── 场景 → 标签映射 ──
 function getSceneTags(mealType: string): string[] {
   const map: Record<string, string[]> = {
+    // 基础场景
     "正餐": ["家常菜", "硬菜", "下饭菜"],
     "早餐": ["早餐", "快手菜", "轻食"],
     "午餐": ["家常菜", "快手菜", "下饭菜"],
     "晚餐": ["家常菜", "硬菜", "汤羹"],
     "下午茶": ["甜品", "小食", "轻食"],
     "轻食": ["轻食", "沙拉", "低卡"],
+    // 首页快捷标签
+    "来点甜的": ["甜品", "小食", "蛋糕", "糖水"],
+    "喝点东西": ["饮品", "汤羹", "奶茶", "果汁", "茶饮"],
+    "喝点儿东西": ["饮品", "汤羹", "奶茶", "果汁", "茶饮"],
     "快速搞定": ["快手菜", "家常菜"],
-    "元气早餐": ["早餐", "快手菜"],
-    "西式料理": ["西餐", "意面", "牛排"],
-    "家常菜": ["家常菜", "下饭菜"],
-    "清爽解腻": ["凉菜", "轻食", "沙拉"],
-    "日韩风味": ["日料", "韩餐"],
+    "吃饱一点": ["硬菜", "主食", "盖饭", "面条", "下饭菜"],
     "清库存": ["家常菜", "快手菜"],
+    "低负担": ["轻食", "沙拉", "低卡", "蒸菜"],
+    "家常菜": ["家常菜", "下饭菜"],
+    "西式料理": ["西餐", "意面", "牛排", "沙拉"],
+    "日韩风味": ["日料", "韩餐", "寿司", "拉面"],
+    "火辣过瘾": ["川菜", "湘菜", "麻辣", "火锅"],
+    "清爽解腻": ["凉菜", "轻食", "沙拉", "酸味"],
+    "高蛋白": ["高蛋白", "鸡胸肉", "牛肉", "鸡蛋"],
+    "低碳水": ["低碳水", "轻食", "沙拉", "蒸菜"],
+    "深夜食堂": ["宵夜", "小吃", "面条", "炒饭"],
+    "元气早餐": ["早餐", "快手菜"],
+    "减脂餐": ["减脂", "轻食", "低卡", "沙拉"],
+    "宝宝餐": ["儿童餐", "辅食", "蒸菜", "清淡"],
+    "微醺调酒": ["鸡尾酒", "调酒", "酒饮", "微醺", "饮品"],
+    "微醺": ["鸡尾酒", "调酒", "酒饮", "微醺", "饮品"],
+    "饮品": ["饮品", "汤羹", "奶茶", "果汁", "茶饮", "鸡尾酒"],
   };
   return map[mealType] || ["家常菜"];
 }
@@ -147,9 +163,13 @@ router.post("/recommend", async (req: Request, res: Response) => {
     console.log(`[AI] Stage 1: Filtered ${candidates.length} candidates from ${allRecipes?.length || 0} total recipes`);
     console.log(`[AI] Top candidates: ${candidates.slice(0, 5).map((c: any) => `${c.name}(score=${c._score},inv=${c._inventoryMatched})`).join(", ")}`);
 
-    // 如果候选不足 3 个，回退到完整生成模式
-    if (candidates.length < 3) {
-      console.log(`[AI] Not enough candidates (${candidates.length}), falling back to full generation`);
+    // 如果候选不足 3 个，或者最佳候选的标签完全不匹配（库里没有相关菜谱），回退到完整生成模式
+    const bestTagScore = candidates.length > 0
+      ? (candidates[0].tags || []).reduce((s: number, t: string) => sceneTags.includes(t) ? s + 1 : s, 0)
+      : 0;
+
+    if (candidates.length < 3 || bestTagScore === 0) {
+      console.log(`[AI] Falling back to full generation (candidates=${candidates.length}, bestTagScore=${bestTagScore})`);
       return await fullGeneration(req, res, apiKey, modelId, ingredients, profile, {
         peopleCount, prepTime, mealType, tastePreference, useInventory,
       });

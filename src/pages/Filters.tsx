@@ -135,7 +135,7 @@ export default function Filters() {
                       {["1人", "2人", "3人+"].map((opt) => (
                         <button
                           key={opt}
-                          onClick={() => setPeopleCount(opt)}
+                          onClick={() => setPeopleCount(peopleCount === opt ? "" : opt)}
                           className={cn(
                             "px-6 py-2.5 rounded-full text-sm font-medium transition-all border",
                             peopleCount === opt ? "bg-black text-white border-black" : "bg-white text-zinc-900 border-zinc-200 shadow-sm"
@@ -153,7 +153,7 @@ export default function Filters() {
                       {["10分钟内", "20分钟内", "30分钟内"].map((opt) => (
                         <button
                           key={opt}
-                          onClick={() => setPrepTime(opt)}
+                          onClick={() => setPrepTime(prepTime === opt ? "" : opt)}
                           className={cn(
                             "px-2 py-2.5 rounded-full text-xs font-medium transition-all border",
                             prepTime === opt ? "bg-black text-white border-black" : "bg-white text-zinc-900 border-zinc-200 shadow-sm"
@@ -163,24 +163,15 @@ export default function Filters() {
                         </button>
                       ))}
                     </div>
-                    <button 
-                      onClick={() => setPrepTime("无所谓")}
-                      className={cn(
-                        "w-full px-4 py-2.5 rounded-full text-sm font-medium transition-all border",
-                        prepTime === "无所谓" ? "bg-black text-white border-black" : "bg-white text-zinc-900 border-zinc-200 shadow-sm"
-                      )}
-                    >
-                      无所谓
-                    </button>
                   </div>
 
                   <div className="space-y-4">
                     <label className="font-bold tracking-widest text-zinc-400 uppercase text-xs block">现在更想吃</label>
-                    <div className="grid grid-cols-4 gap-2">
-                      {["下午茶", "轻食", "正餐", "饮品"].map((opt) => (
+                    <div className="grid grid-cols-5 gap-2">
+                      {["下午茶", "轻食", "正餐", "饮品", "微醺"].map((opt) => (
                         <button
                           key={opt}
-                          onClick={() => setMealType(opt)}
+                          onClick={() => setMealType(mealType === opt ? "" : opt)}
                           className={cn(
                             "px-2 py-2 rounded-xl text-xs font-medium transition-all border",
                             mealType === opt ? "bg-black text-white border-black" : "bg-white text-zinc-900 border-zinc-200 shadow-sm"
@@ -198,7 +189,7 @@ export default function Filters() {
                       {["清淡", "甜口", "咸香", "香辣"].map((opt) => (
                         <span
                           key={opt}
-                          onClick={() => setTastePreference(opt)}
+                          onClick={() => setTastePreference(tastePreference === opt ? "" : opt)}
                           className={cn(
                             "px-5 py-2 rounded-lg text-sm cursor-pointer transition-all border",
                             tastePreference === opt ? "bg-black text-white border-black" : "bg-white text-zinc-500 border-zinc-200 shadow-sm"
