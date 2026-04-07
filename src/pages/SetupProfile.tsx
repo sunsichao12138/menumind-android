@@ -68,6 +68,7 @@ export default function SetupProfile() {
         displayName: displayName.trim(),
         avatarUrl,
       });
+      localStorage.removeItem("needsSetup");
       navigate("/", { replace: true });
     } catch (err) {
       console.error("Failed to save profile:", err);

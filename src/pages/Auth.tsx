@@ -55,6 +55,7 @@ export default function Auth() {
             setError(error);
           }
         } else {
+          localStorage.setItem("needsSetup", "true");
           navigate("/setup-profile", { replace: true });
         }
       }

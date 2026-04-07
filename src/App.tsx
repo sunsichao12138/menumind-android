@@ -62,7 +62,7 @@ function AppRoutes() {
   return (
     <Routes>
       {/* 公开路由 */}
-      <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
+      <Route path="/auth" element={user ? <Navigate to={localStorage.getItem("needsSetup") === "true" ? "/setup-profile" : "/"} replace /> : <Auth />} />
 
       {/* 首次设置资料 */}
       <Route path="/setup-profile" element={
