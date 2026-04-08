@@ -52,10 +52,10 @@ function getMaxMinutes(prepTime: string): number {
 // ── 口味偏好 → 标签映射 ──
 function getTasteTags(taste: string): { boost: string[]; penalize: string[] } {
   const map: Record<string, { boost: string[]; penalize: string[] }> = {
-    "香辣": { boost: ["川菜", "湘菜", "麻辣", "火锅", "下饭菜"], penalize: ["清淡", "蒸菜", "轻食"] },
-    "清淡": { boost: ["清淡", "蒸菜", "轻食", "低卡"], penalize: ["麻辣", "火锅"] },
-    "咸香": { boost: ["家常菜", "下饭菜", "硬菜"], penalize: [] },
-    "甜口": { boost: ["甜品", "小食", "蛋糕", "糖水"], penalize: ["麻辣"] },
+    "香辣": { boost: ["川菜", "湘菜", "麻辣", "火锅", "下饭菜"], penalize: ["清淡", "蒸菜", "轻食", "甜品", "糖水"] },
+    "清淡": { boost: ["清淡", "蒸菜", "轻食", "低卡"], penalize: ["麻辣", "火锅", "川菜", "湘菜"] },
+    "咸香": { boost: ["家常菜", "下饭菜", "硬菜"], penalize: ["甜品", "糖水", "蛋糕"] },
+    "甜口": { boost: ["甜品", "小食", "蛋糕", "糖水"], penalize: ["麻辣", "家常菜", "硬菜", "下饭菜", "川菜", "湘菜", "蒸菜"] },
   };
   return map[taste] || { boost: [], penalize: [] };
 }
