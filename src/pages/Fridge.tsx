@@ -113,7 +113,7 @@ export default function Fridge() {
 
         <section className="sticky top-0 z-40 bg-surface -mx-6 py-4">
           <div className="flex overflow-x-auto no-scrollbar px-6 gap-2">
-            {["全部", "临期", "蔬菜", "蛋奶肉类", "主食干货", "调料"].map((cat) => (
+            {["全部", "临期", "蔬菜", "水果", "蛋奶肉类", "海鲜水产", "主食干货", "豆制品", "调料", "饮品", "零食"].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}

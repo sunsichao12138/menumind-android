@@ -274,7 +274,7 @@ export default function AddIngredient({ isOpen, onClose, onAdded }: AddIngredien
                       onChange={(e) => setFormData({...formData, category: e.target.value})}
                       className="w-full bg-white border border-zinc-100 rounded-xl py-2.5 pl-11 pr-4 shadow-sm focus:outline-none focus:ring-2 focus:ring-black transition-all text-sm font-medium appearance-none"
                     >
-                      {["蔬菜", "蛋奶肉类", "主食干货", "调料", "水果", "其他"].map(cat => (
+                      {["蔬菜", "水果", "蛋奶肉类", "海鲜水产", "主食干货", "豆制品", "调料", "饮品", "零食", "其他"].map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
                     </select>
