@@ -233,7 +233,7 @@ export default function AddIngredient({ isOpen, onClose, onAdded }: AddIngredien
             </div>
 
             {/* 固定底部按钮 */}
-            <div className="flex-shrink-0 px-8 py-6 bg-surface border-t border-zinc-100">
+            <div className="flex-shrink-0 px-8 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom,1.5rem))] bg-surface border-t border-zinc-100">
             <button 
               onClick={handleSubmit}
               disabled={submitting || !formData.name || !formData.amount}
