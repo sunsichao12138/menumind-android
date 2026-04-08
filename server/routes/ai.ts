@@ -152,16 +152,20 @@ router.post("/recommend", async (req: Request, res: Response) => {
     // 口味偏好标签
     const tasteTags = getTasteTags(tastePreference || "");
 
+    // 将口味偏好标签合并到场景标签中，确保口味相关菜品不会被硬筛移除
+    const combinedTags = [...new Set([...sceneTags, ...tasteTags.boost])];
+
     // 重新计算分数：标签 + 库存匹配（含临期加权）+ 口味偏好
     candidates = candidates.map((r: any) => {
+      // 场景标签匹配（只算原始场景标签）
       const tagScore = (r.tags || []).reduce((score: number, tag: string) =>
         sceneTags.includes(tag) ? score + 2 : score, 0);
 
-      // 口味偏好加分/减分
+      // 口味偏好加分/减分（权重更高，确保口味偏好有实际影响力）
       let tasteScore = 0;
       for (const tag of (r.tags || [])) {
-        if (tasteTags.boost.includes(tag)) tasteScore += 3;
-        if (tasteTags.penalize.includes(tag)) tasteScore -= 4;
+        if (tasteTags.boost.includes(tag)) tasteScore += 8;
+        if (tasteTags.penalize.includes(tag)) tasteScore -= 10;
       }
 
       let inventoryScore = 0;
@@ -178,11 +182,15 @@ router.post("/recommend", async (req: Request, res: Response) => {
         }
       }
 
-      return { ...r, _tagScore: tagScore, _score: tagScore + inventoryScore + tasteScore, _inventoryMatched: matchedCount, _tasteScore: tasteScore };
+      // combinedTagScore 用于硬筛判断（场景+口味标签都算匹配）
+      const combinedTagScore = (r.tags || []).reduce((score: number, tag: string) =>
+        combinedTags.includes(tag) ? score + 1 : score, 0);
+
+      return { ...r, _tagScore: tagScore, _combinedTagScore: combinedTagScore, _score: tagScore + inventoryScore + tasteScore, _inventoryMatched: matchedCount, _tasteScore: tasteScore };
     });
 
-    // 先硬筛：只保留至少有1个标签匹配的菜谱（确保"饮品"不会出现菜）
-    const tagMatched = candidates.filter((r: any) => r._tagScore > 0);
+    // 先硬筛：只保留至少有1个标签匹配的菜谱（场景标签 OR 口味标签）
+    const tagMatched = candidates.filter((r: any) => r._combinedTagScore > 0);
     if (tagMatched.length >= 3) {
       candidates = tagMatched;
       console.log(`[AI] Hard tag filter: kept ${candidates.length} tag-matched recipes`);
