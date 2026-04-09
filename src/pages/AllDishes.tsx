@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Check, Clock, Package } from "lucide-react";
+import { ArrowLeft, Plus, Check, Clock, Package, Search } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "../lib/utils";
 import { usePlan } from "../context/PlanContext";
@@ -12,6 +12,8 @@ export default function AllDishes() {
   const { addToPlan, removeFromPlan, isInPlan } = usePlan();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("全部");
 
   useEffect(() => {
     api.get<Recipe[]>("/recipes")
@@ -32,10 +34,16 @@ export default function AllDishes() {
     );
   }
 
+  const filteredRecipes = recipes.filter(r => {
+    const matchesSearch = r.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = activeCategory === "全部" || (r.tags && r.tags.includes(activeCategory));
+    return matchesSearch && matchesCategory;
+  });
+
   // 分成两列实现瀑布流
   const col1: Recipe[] = [];
   const col2: Recipe[] = [];
-  recipes.forEach((r, i) => {
+  filteredRecipes.forEach((r, i) => {
     if (i % 2 === 0) col1.push(r);
     else col2.push(r);
   });
@@ -126,10 +134,41 @@ export default function AllDishes() {
           <ArrowLeft size={24} />
         </button>
         <h1 className="text-xl font-bold">全部菜品</h1>
-        <span className="text-xs text-zinc-400 font-medium ml-auto">{recipes.length} 道菜</span>
+        <span className="text-xs text-zinc-400 font-medium ml-auto">{filteredRecipes.length} 道菜</span>
       </header>
 
-      <div className="px-4 pb-12">
+      {/* 搜索与分类 */}
+      <div className="px-6 py-2 space-y-4 bg-surface sticky top-[72px] z-40 pb-4">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
+          <input 
+            type="text" 
+            placeholder="搜索菜品..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-white border border-zinc-100 rounded-2xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black transition-all shadow-sm"
+          />
+        </div>
+        
+        <div className="flex overflow-x-auto no-scrollbar gap-2 -mx-6 px-6">
+          {["全部", "家常菜", "快手菜", "下饭菜", "高蛋白", "低卡", "主食", "甜品", "西餐", "小食", "汤羹"].map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={cn(
+                "px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap border transition-all active:scale-95",
+                activeCategory === cat 
+                  ? "bg-black text-white border-black shadow-md" 
+                  : "bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50"
+              )}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="px-4 pb-24">
         <div className="flex gap-3">
           <div className="flex-1 flex flex-col">
             {col1.map((recipe, i) => (
