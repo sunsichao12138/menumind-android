@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, ArrowRight, Sparkles, Clock, Plus, Check, Trash2, X, ChefHat, ShoppingBasket } from "lucide-react";
+import { Calendar, ArrowRight, Sparkles, Clock, Plus, Check, Trash2, X, ChefHat, ShoppingBasket, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { usePlan } from "../context/PlanContext";
 import { cn } from "../lib/utils";
@@ -14,6 +14,7 @@ export default function Plan() {
   const [showConsumeModal, setShowConsumeModal] = useState(false);
   const [consumeList, setConsumeList] = useState<Array<{name: string, requiredStr: string, amount: number, unit: string, stock: string}>>([]);
   const [suggestedRecipes, setSuggestedRecipes] = useState<Recipe[]>([]);
+  const [loadingConsume, setLoadingConsume] = useState(false);
 
   // 从 API 加载推荐菜谱
   useEffect(() => {
@@ -39,15 +40,30 @@ export default function Plan() {
 
   const selectedRecipes = plannedRecipes.filter(r => selectedIds.includes(r.id));
 
-  const handleStartCooking = () => {
-    // 构建消耗列表
+  const handleStartCooking = async () => {
+    setLoadingConsume(true);
+
+    // 1) 拉取用户的真实库存
+    let inventory: Array<{ name: string; amount: string }> = [];
+    try {
+      inventory = await api.get<any[]>("/ingredients");
+    } catch (err) {
+      console.error("Failed to load inventory:", err);
+    }
+
+    // 构建库存名 -> 数量 映射
+    const stockMap = new Map<string, string>();
+    inventory.forEach((inv: any) => {
+      if (inv.name) stockMap.set(inv.name, inv.amount || "0");
+    });
+
+    // 2) 构建消耗列表
     const allIngredients = selectedRecipes.flatMap(r => [...r.ingredients.have, ...r.ingredients.missing]);
     const map = new Map<string, any>();
     
     allIngredients.forEach(i => {
       if (i.name) {
         if (!map.has(i.name)) {
-          // 解析数字和单位
           const match = (i.amount || "").match(/^([\d.]+)\s*(.*)$/);
           let val = 1;
           let unit = "";
@@ -58,34 +74,67 @@ export default function Plan() {
              val = parseFloat(i.amount) || 1;
              unit = i.amount?.replace(/[\d.\s]/g, '') || "份";
           }
+
+          // 查看真实库存
+          let realStock = "未知";
+          const exactMatch = stockMap.get(i.name);
+          if (exactMatch !== undefined) {
+            realStock = exactMatch;
+          } else {
+            // 模糊匹配
+            for (const [sn, sv] of stockMap) {
+              if (sn.includes(i.name) || i.name.includes(sn)) {
+                realStock = sv;
+                break;
+              }
+            }
+          }
+
           map.set(i.name, {
             name: i.name,
             requiredStr: i.amount || "适量",
             amount: val,
             unit: unit.trim(),
-            stock: "未知"
+            stock: realStock,
           });
         } else {
-          // 简易累加
           const current = map.get(i.name);
           const match = (i.amount || "").match(/^([\d.]+)\s*(.*)$/);
           if (match) {
              current.amount += (parseFloat(match[1]) || 0);
-             // 更新所需字符串显示
              current.requiredStr = `${current.amount} ${current.unit}`;
           }
         }
       }
     });
     setConsumeList(Array.from(map.values()));
+    setLoadingConsume(false);
     setShowConsumeModal(true);
   };
 
-  const confirmConsumption = () => {
-    // 实际业务中应在这里调用扣除食材接口，现在仅从计划中移除
+  const [consuming, setConsuming] = useState(false);
+
+  const confirmConsumption = async () => {
+    setConsuming(true);
+    try {
+      // 调用后端扣减库存接口
+      await api.post("/ingredients/consume", {
+        items: consumeList.map(item => ({
+          name: item.name,
+          amount: item.amount,
+          unit: item.unit,
+        })),
+      });
+    } catch (err) {
+      console.error("Failed to consume ingredients:", err);
+      // 即使失败也继续移除计划（食材扣减为辅助功能）
+    }
+
+    // 从计划中移除已选菜品
     selectedIds.forEach(id => removeFromPlan(id));
     setSelectedIds([]);
     setShowConsumeModal(false);
+    setConsuming(false);
   };
 
 
@@ -251,16 +300,16 @@ export default function Plan() {
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-md px-6 z-40">
           <button 
             onClick={handleStartCooking}
-            disabled={selectedIds.length === 0}
+            disabled={selectedIds.length === 0 || loadingConsume}
             className={cn(
               "w-full py-5 rounded-full font-bold text-lg shadow-2xl flex items-center justify-center gap-3 transition-all",
-              selectedIds.length > 0
+              selectedIds.length > 0 && !loadingConsume
                 ? "bg-black text-white active:scale-95"
                 : "bg-zinc-200 text-zinc-400 cursor-not-allowed"
             )}
           >
-            <ChefHat size={20} />
-            <span>开始烹饪{selectedIds.length > 0 ? ` (${selectedIds.length})` : ""}</span>
+            {loadingConsume ? <Loader2 size={20} className="animate-spin" /> : <ChefHat size={20} />}
+            <span>{loadingConsume ? "加载中..." : `开始烹饪${selectedIds.length > 0 ? ` (${selectedIds.length})` : ""}`}</span>
           </button>
         </div>
       )}
@@ -347,9 +396,16 @@ export default function Plan() {
                 </div>
                 <button 
                   onClick={confirmConsumption}
-                  className="w-full bg-black text-white py-[1.125rem] rounded-[24px] font-bold text-[15px] shadow-xl active:scale-95 transition-all"
+                  disabled={consuming}
+                  className={cn(
+                    "w-full py-[1.125rem] rounded-[24px] font-bold text-[15px] shadow-xl transition-all flex items-center justify-center gap-2",
+                    consuming
+                      ? "bg-zinc-300 text-zinc-500 cursor-not-allowed"
+                      : "bg-black text-white active:scale-95"
+                  )}
                 >
-                  确认消耗并继续
+                  {consuming && <Loader2 size={16} className="animate-spin" />}
+                  {consuming ? "正在处理..." : "确认消耗并继续"}
                 </button>
               </div>
             </motion.div>

@@ -134,4 +134,106 @@ router.delete("/:id", async (req: Request, res: Response) => {
   }
 });
 
+// POST /api/ingredients/consume - 批量消耗食材（烹饪扣库存）
+router.post("/consume", async (req: Request, res: Response) => {
+  try {
+    const { items } = req.body as {
+      items: Array<{ name: string; amount: number; unit: string }>;
+    };
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      res.status(400).json({ error: "items array is required" });
+      return;
+    }
+
+    // 1) 读取用户全部库存
+    const { data: inventory, error: fetchErr } = await supabase
+      .from("ingredients")
+      .select("*")
+      .eq("user_id", req.userId!);
+
+    if (fetchErr) throw fetchErr;
+
+    const results: Array<{
+      name: string;
+      consumed: number;
+      unit: string;
+      previousStock: string;
+      newStock: string;
+      matched: boolean;
+    }> = [];
+
+    // 2) 逐项匹配 & 扣减
+    for (const item of items) {
+      if (!item.name || item.amount <= 0) continue;
+
+      // 模糊匹配：优先完全匹配，其次 includes 匹配
+      let matched = (inventory || []).find(
+        (inv: any) => inv.name === item.name
+      );
+      if (!matched) {
+        matched = (inventory || []).find((inv: any) =>
+          inv.name.includes(item.name) || item.name.includes(inv.name)
+        );
+      }
+
+      if (matched) {
+        // 解析当前库存数字
+        const stockMatch = (matched.amount || "").match(/^([\d.]+)\s*(.*)$/);
+        let stockVal = 0;
+        let stockUnit = "";
+        if (stockMatch) {
+          stockVal = parseFloat(stockMatch[1]) || 0;
+          stockUnit = stockMatch[2] || "";
+        }
+
+        const previousStock = matched.amount || "0";
+        const newVal = Math.max(0, stockVal - item.amount);
+        const newAmount = `${newVal}${stockUnit || item.unit}`;
+
+        // 更新数据库
+        const { error: updateErr } = await supabase
+          .from("ingredients")
+          .update({ amount: newAmount, updated_at: new Date().toISOString() })
+          .eq("id", matched.id)
+          .eq("user_id", req.userId!);
+
+        if (updateErr) {
+          console.error(`Failed to update ingredient ${matched.name}:`, updateErr.message);
+        }
+
+        // 如果扣减后为 0，可选择性删除（保留记录，不删）
+        results.push({
+          name: item.name,
+          consumed: item.amount,
+          unit: item.unit,
+          previousStock,
+          newStock: newAmount,
+          matched: true,
+        });
+      } else {
+        // 库存中未找到该食材
+        results.push({
+          name: item.name,
+          consumed: item.amount,
+          unit: item.unit,
+          previousStock: "无库存",
+          newStock: "无库存",
+          matched: false,
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      consumed: results.filter((r) => r.matched).length,
+      notFound: results.filter((r) => !r.matched).length,
+      details: results,
+    });
+  } catch (err: any) {
+    console.error("POST /api/ingredients/consume error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;
