@@ -68,8 +68,8 @@ export default function AllDishes() {
               referrerPolicy="no-referrer"
             />
           </div>
-          <div className="p-3">
-            <h4 className="text-sm font-bold text-zinc-900 truncate mb-1">{recipe.name}</h4>
+          <div className="p-2.5 pb-1">
+            <h4 className="text-[13px] font-bold text-zinc-900 truncate mb-1">{recipe.name}</h4>
             <div className="flex items-center gap-2 text-[10px] text-zinc-400 font-medium">
               <span className="flex items-center gap-0.5">
                 <Clock size={10} /> {recipe.time}
@@ -81,7 +81,7 @@ export default function AllDishes() {
               )}
             </div>
             {recipe.tags && recipe.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
+              <div className="flex flex-wrap gap-1 mt-1.5">
                 {recipe.tags.slice(0, 2).map((tag) => (
                   <span key={tag} className="px-2 py-0.5 bg-zinc-50 text-[9px] text-zinc-500 rounded-full border border-zinc-100">
                     {tag}
@@ -91,9 +91,9 @@ export default function AllDishes() {
             )}
           </div>
         </div>
-        <div className="px-3 pb-3">
-          <div className="flex items-center justify-between mt-1 pt-2 border-t border-zinc-50">
-            <div className="text-[11px] font-bold">
+        <div className="px-2.5 pb-2.5">
+          <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-zinc-50">
+            <div className="text-[10px] font-bold">
               {(recipe.ingredients?.missing?.length || 0) > 0 ? (
                 <span className="text-orange-500">缺少 {recipe.ingredients.missing.length} 种食材</span>
               ) : (
@@ -110,13 +110,13 @@ export default function AllDishes() {
                 }
               }}
               className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-95 shadow-sm",
+                "w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-95 shadow-sm",
                 planned
                   ? "bg-zinc-100 text-zinc-400 border border-zinc-200"
                   : "bg-black text-white"
               )}
             >
-              {planned ? <Check size={16} /> : <Plus size={16} />}
+              {planned ? <Check size={14} /> : <Plus size={14} />}
             </button>
           </div>
         </div>
