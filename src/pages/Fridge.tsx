@@ -104,28 +104,22 @@ export default function Fridge() {
 
       <main className="space-y-4">
         <section className="mt-1">
-          <div className="bg-black text-white rounded-3xl shadow-lg relative overflow-hidden py-6 px-8">
+          <div className="bg-black text-white rounded-[28px] shadow-lg relative overflow-hidden py-4 px-5">
             <div className="relative z-10">
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="flex flex-col items-center justify-center bg-zinc-800 py-3 rounded-2xl">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="flex flex-col items-center justify-center bg-zinc-800 py-2.5 rounded-[20px]">
                   <span className="text-2xl font-bold text-white">{ingredients.length}</span>
-                  <span className="text-[10px] font-bold mt-0.5 text-zinc-300">现有食材</span>
+                  <span className="text-[9px] font-bold mt-0.5 text-zinc-300">现有食材</span>
                 </div>
-                <div className="flex flex-col items-center justify-center bg-zinc-800 py-3 rounded-2xl">
+                <div className="flex flex-col items-center justify-center bg-zinc-800 py-2.5 rounded-[20px]">
                   <span className="text-2xl font-bold text-red-400">{expiringCount}</span>
-                  <span className="text-[10px] font-bold mt-0.5 text-zinc-300">快过期</span>
+                  <span className="text-[9px] font-bold mt-0.5 text-zinc-300">快过期</span>
                 </div>
-                <div className="flex flex-col items-center justify-center bg-zinc-800 py-3 rounded-2xl">
+                <div className="flex flex-col items-center justify-center bg-zinc-800 py-2.5 rounded-[20px]">
                   <span className={cn("text-2xl font-bold", expiredCount > 0 ? "text-orange-400" : "text-white")}>{expiredCount}</span>
-                  <span className="text-[10px] font-bold mt-0.5 text-zinc-300">已过期</span>
+                  <span className="text-[9px] font-bold mt-0.5 text-zinc-300">已过期</span>
                 </div>
               </div>
-              <button 
-                onClick={() => navigate("/filters?quick=true&tag=清库存")}
-                className="w-full bg-white text-black py-4 rounded-full font-bold text-sm tracking-wide active:scale-95 transition-all"
-              >
-                用当前库存推荐菜单
-              </button>
             </div>
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-zinc-800 to-transparent opacity-50 rounded-full -mr-16 -mt-16"></div>
           </div>
