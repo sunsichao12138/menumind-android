@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Minus, Search } from "lucide-react";
+import { Plus, Minus, Search, Trash2 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { motion } from "motion/react";
 import AddIngredient from "./AddIngredient";
@@ -23,23 +23,35 @@ export default function Fridge() {
       .finally(() => setLoadingIngredients(false));
   }, []);
 
-  const updateQuantity = (id: string, delta: number) => {
-    setIngredients(prev => prev.map(item => {
-      if (item.id === id) {
-        const currentAmount = parseInt(item.amount);
-        const unit = item.amount.replace(/[0-9]/g, '').trim();
-        const newAmount = Math.max(0, currentAmount + delta);
-        const newAmountStr = `${newAmount} ${unit}`;
-        
-        // 调用 API 更新
-        api.patch(`/ingredients/${id}`, { amount: newAmountStr }).catch((err) => {
-          console.error("Failed to update ingredient:", err);
-        });
+  const deleteIngredient = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    // 乐观删除
+    setIngredients(prev => prev.filter(item => item.id !== id));
+    api.delete(`/ingredients/${id}`).catch((err) => {
+      console.error("Failed to delete ingredient:", err);
+    });
+  };
 
-        return { ...item, amount: newAmountStr };
+  const updateQuantity = (id: string, delta: number) => {
+    setIngredients(prev => {
+      const item = prev.find(i => i.id === id);
+      if (!item) return prev;
+      
+      const currentAmount = parseFloat(item.amount) || 0;
+      const unit = item.amount.replace(/[0-9.]/g, '').trim();
+      const newAmount = currentAmount + delta;
+
+      if (newAmount <= 0) {
+        // 小于等于0 自动删除
+        api.delete(`/ingredients/${id}`).catch(err => console.error("Failed to delete:", err));
+        return prev.filter(i => i.id !== id);
+      } else {
+        // 正常更新数量
+        const newAmountStr = `${newAmount} ${unit}`.trim();
+        api.patch(`/ingredients/${id}`, { amount: newAmountStr }).catch(err => console.error("Failed to udpate:", err));
+        return prev.map(i => i.id === id ? { ...i, amount: newAmountStr } : i);
       }
-      return item;
-    }));
+    });
   };
 
   const handleIngredientAdded = (newIngredient: Ingredient) => {
@@ -170,7 +182,14 @@ export default function Fridge() {
                     >
                       <Plus size={16} />
                     </button>
-                    <span className="text-xs text-zinc-400 font-medium">{unit}</span>
+                    <span className="text-xs text-zinc-400 font-medium ml-1 mr-2">{unit}</span>
+                    <div className="w-[1px] h-4 bg-zinc-200"></div>
+                    <button 
+                      onClick={(e) => deleteIngredient(item.id, e)}
+                      className="w-8 h-8 rounded-full border border-red-100 bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 active:bg-red-200 transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </div>
               </div>

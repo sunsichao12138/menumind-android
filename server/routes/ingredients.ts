@@ -186,15 +186,32 @@ router.post("/consume", async (req: Request, res: Response) => {
         const result = calculateConsumption(item.name, previousStock, consumeStr);
 
         if (!result.skipped) {
-          // 更新数据库
-          const { error: updateErr } = await supabase
-            .from("ingredients")
-            .update({ amount: result.newStockStr, updated_at: new Date().toISOString() })
-            .eq("id", matched.id)
-            .eq("user_id", req.userId!);
+          const newValStr = result.newStockStr;
+          const match = newValStr.match(/^([\d.]+)/);
+          const numericVal = match ? parseFloat(match[1]) : 0;
 
-          if (updateErr) {
-            console.error(`Failed to update ingredient ${matched.name}:`, updateErr.message);
+          if (numericVal <= 0) {
+            // <= 0 自动删除
+            const { error: deleteErr } = await supabase
+              .from("ingredients")
+              .delete()
+              .eq("id", matched.id)
+              .eq("user_id", req.userId!);
+              
+            if (deleteErr) {
+              console.error(`Failed to delete ingredient ${matched.name}:`, deleteErr.message);
+            }
+          } else {
+            // 更新剩余数量
+            const { error: updateErr } = await supabase
+              .from("ingredients")
+              .update({ amount: result.newStockStr, updated_at: new Date().toISOString() })
+              .eq("id", matched.id)
+              .eq("user_id", req.userId!);
+
+            if (updateErr) {
+              console.error(`Failed to update ingredient ${matched.name}:`, updateErr.message);
+            }
           }
         }
 
