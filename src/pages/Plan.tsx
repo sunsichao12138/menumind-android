@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, ArrowRight, Sparkles, Clock, Plus, Check, Trash2, X, ChefHat, ShoppingBasket, Loader2 } from "lucide-react";
+import { Calendar, ArrowRight, Sparkles, Clock, Plus, Check, Trash2, X, ChefHat, ShoppingBasket, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { usePlan } from "../context/PlanContext";
 import { cn } from "../lib/utils";
@@ -39,6 +39,22 @@ export default function Plan() {
   };
 
   const selectedRecipes = plannedRecipes.filter(r => selectedIds.includes(r.id));
+
+  const [isMissingExpanded, setIsMissingExpanded] = useState(false);
+
+  // 计算所选菜谱中缺失的食材
+  const missingItemsMap = new Map<string, string>();
+  selectedRecipes.forEach(r => {
+    r.ingredients?.missing?.forEach(i => {
+      if (i.name) {
+        if (!missingItemsMap.has(i.name)) {
+          missingItemsMap.set(i.name, i.amount || "适量");
+        }
+      }
+    });
+  });
+  const missingItems = Array.from(missingItemsMap.entries());
+  const missingCount = missingItems.length;
 
   const handleStartCooking = async () => {
     setLoadingConsume(true);
@@ -295,11 +311,51 @@ export default function Plan() {
       {/* 固定底部按钮 - 始终显示 */}
       {plannedRecipes.length > 0 && (
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-md px-6 z-40">
+          <AnimatePresence>
+            {missingCount > 0 && selectedIds.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                className="w-full mb-3 bg-gradient-to-r from-orange-50 to-orange-50/80 font-bold border border-orange-200/60 rounded-[28px] overflow-hidden shadow-lg backdrop-blur-md"
+              >
+                <button 
+                  onClick={() => setIsMissingExpanded(!isMissingExpanded)}
+                  className="w-full py-3.5 px-5 flex items-center justify-between text-orange-600 active:bg-orange-100/30 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="bg-orange-100/80 p-1 rounded-full"><X size={12} className="text-orange-500" strokeWidth={3} /></div>
+                    <span className="text-[14px]">缺少 {missingCount} 种食材，建议先补货</span>
+                  </div>
+                  {isMissingExpanded ? <ChevronUp size={18} className="text-orange-400" /> : <ChevronDown size={18} className="text-orange-400" />}
+                </button>
+                <AnimatePresence>
+                  {isMissingExpanded && (
+                    <motion.div
+                       initial={{ height: 0 }}
+                       animate={{ height: "auto" }}
+                       exit={{ height: 0 }}
+                       className="px-5 pb-4"
+                    >
+                      <div className="flex flex-col gap-2 mt-1">
+                         {missingItems.map(([name, amount], idx) => (
+                            <div key={idx} className="flex justify-between items-center text-[13px] text-orange-700/80">
+                              <span className="font-extrabold">{name}</span>
+                              <span className="font-medium bg-orange-100/50 px-2 py-0.5 rounded-md">{amount}</span>
+                            </div>
+                         ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <button 
             onClick={handleStartCooking}
             disabled={selectedIds.length === 0 || loadingConsume}
             className={cn(
-              "w-full py-5 rounded-full font-bold text-lg shadow-2xl flex items-center justify-center gap-3 transition-all",
+              "w-full py-5 rounded-full font-bold text-lg shadow-2xl flex items-center justify-center gap-3 transition-all relative z-10",
               selectedIds.length > 0 && !loadingConsume
                 ? "bg-black text-white active:scale-95"
                 : "bg-zinc-200 text-zinc-400 cursor-not-allowed"
