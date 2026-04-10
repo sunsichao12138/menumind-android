@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, Sparkles, Package, Clock, Utensils, Plus, ChevronDown, ChevronUp, Heart, X, Check } from "lucide-react";
+import { ArrowRight, Sparkles, Package, Clock, Utensils, Plus, ChevronDown, ChevronUp, Heart, X, Check, ChevronsDown } from "lucide-react";
 import { cn } from "../lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { useFavorites } from "../context/FavoritesContext";
@@ -99,11 +99,13 @@ export default function Filters() {
     setShowFilters(false);
     setShowResults(false);
     setIsLoading(true);
+    setShowAll(false);
     
     loadAiRecipes();
   };
 
-  const displayRecipes = recipes.slice(0, 10);
+  const [showAll, setShowAll] = useState(false);
+  const displayRecipes = showAll ? recipes.slice(0, 10) : recipes.slice(0, 5);
 
   return (
     <div className="min-h-screen bg-surface max-w-md mx-auto relative shadow-2xl animate-in slide-in-from-bottom duration-500">
@@ -380,6 +382,18 @@ export default function Filters() {
                   </motion.div>
                 ))}
               </div>
+
+              {!showAll && recipes.length > 5 && (
+                <motion.button
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1, transition: { delay: 0.8 } }}
+                  onClick={() => setShowAll(true)}
+                  className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border border-zinc-200 bg-white text-zinc-500 font-bold text-sm hover:bg-zinc-50 active:scale-[0.98] transition-all editorial-shadow"
+                >
+                  <ChevronsDown size={16} />
+                  查看更多推荐
+                </motion.button>
+              )}
             </motion.section>
           )}
         </AnimatePresence>
