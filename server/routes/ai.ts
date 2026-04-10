@@ -270,7 +270,7 @@ ${candidateSummary}
 [
   {
     "index": 1,
-    "recommendationReason": "推荐理由（简短一句话）",
+    "recommendationReason": "推荐理由（结合因何推荐与菜品特色的一句话简评）",
     "matchPercentage": 85,
     "inventoryMatch": 3,
     "ingredientsHave": [{"name": "食材名", "amount": "用量"}],
@@ -306,7 +306,9 @@ ${candidateSummary}
           time: c.time || "",
           difficulty: c.difficulty || "",
           calories: c.calories || "",
-          recommendationReason: `根据您的库存智能匹配（匹配${realHave.length}种食材）`,
+          recommendationReason: realHave.length > 0
+            ? `完美利用了家中的 ${realHave.slice(0, 3).map(i => i.name).join("、")}${realHave.length > 3 ? "等" : ""}。${c.description ? c.description : '省事又美味！'}`
+            : `完美契合您当前的口味偏好。${c.description ? c.description : '快来试试吧！'}`,
           matchPercentage: allIngs.length > 0 ? Math.round((realHave.length / allIngs.length) * 100) : 60,
           inventoryMatch: realHave.length,
           ingredients: { have: realHave, missing: realMissing },
@@ -453,7 +455,9 @@ ${candidateSummary}
         time: c.time || "",
         difficulty: c.difficulty || "",
         calories: c.calories || "",
-        recommendationReason: `根据您的库存智能匹配（匹配${realHave.length}种食材）`,
+        recommendationReason: realHave.length > 0
+          ? `完美利用了家中的 ${realHave.slice(0, 3).map(i => i.name).join("、")}${realHave.length > 3 ? "等" : ""}。${c.description ? c.description : '省事又美味！'}`
+          : `完美契合您当前的口味偏好。${c.description ? c.description : '快来试试吧！'}`,
         matchPercentage: allIngs.length > 0 ? Math.round((realHave.length / allIngs.length) * 100) : 60,
         inventoryMatch: realHave.length,
         ingredients: { have: realHave, missing: realMissing },
@@ -513,7 +517,7 @@ ${ingredientList || "暂无食材"}
     "time": "预计时间",
     "difficulty": "简单/中等/困难",
     "calories": "预估热量如 350 kcal",
-    "recommendationReason": "推荐理由",
+    "recommendationReason": "推荐理由（结合匹配到的食材，并简述菜品特色，吸引用户）",
     "matchPercentage": 85,
     "inventoryMatch": 3,
     "ingredients": {
