@@ -219,15 +219,17 @@ export default function Home() {
                         >
                           <Heart size={14} fill={isFavorite(pick.id) ? "currentColor" : "none"} />
                         </button>
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
                         <span className={cn(
-                          "flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full border whitespace-nowrap ml-auto",
+                          "flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full border whitespace-nowrap",
                           slotCfg.color
                         )}>
                           <SlotIcon size={10} />
                           {slotCfg.label}
                         </span>
+                        <p className="text-xs text-zinc-500 leading-tight truncate">{pick.hint}</p>
                       </div>
-                      <p className="text-xs text-zinc-500 mt-0.5 leading-tight">{pick.hint}</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="flex items-center text-xs text-zinc-400">
