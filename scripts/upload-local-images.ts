@@ -16,7 +16,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const IMAGE_DIR = "C:\\Users\\ssc\\Downloads\\caipin";
+const IMAGE_DIR = "D:\\menumind\\Download";
 const BUCKET_NAME = "recipe-images";
 const DRY_RUN = process.argv.includes("--dry-run");
 

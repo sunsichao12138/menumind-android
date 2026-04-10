@@ -26,6 +26,18 @@ export default function DishDetail() {
     if (!id) return;
     api.get<Recipe>(`/recipes/${id}`)
       .then((data) => {
+        // 尝试从本地缓存中找回 AI 生成的推荐理由
+        try {
+          const raw = localStorage.getItem("ai_recommend_cache");
+          if (raw) {
+            const cached = JSON.parse(raw);
+            const cachedRecipe = cached.recipes?.find((r: Recipe) => r.id === data.id);
+            if (cachedRecipe && cachedRecipe.recommendationReason) {
+              data.recommendationReason = cachedRecipe.recommendationReason;
+            }
+          }
+        } catch (e) {}
+
         setRecipe(data);
         addToHistory(data);
       })
@@ -118,18 +130,20 @@ export default function DishDetail() {
           </span>
         </section>
 
-        <section className="mb-10">
-          <div className="bg-[#F7FBF9] p-6 rounded-3xl border border-[#E8F3ED]">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm flex-shrink-0">
-                <Sparkles className="text-[#4CAF50]" size={16} />
+        {recipe.recommendationReason && (
+          <section className="mb-10">
+            <div className="bg-[#F7FBF9] p-6 rounded-3xl border border-[#E8F3ED]">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm flex-shrink-0">
+                  <Sparkles className="text-[#4CAF50]" size={16} />
+                </div>
+                <p className="text-zinc-700 leading-relaxed text-sm">
+                  <span className="font-bold text-zinc-900">推荐理由：</span>{recipe.recommendationReason}
+                </p>
               </div>
-              <p className="text-zinc-700 leading-relaxed text-sm">
-                <span className="font-bold text-zinc-900">推荐理由：</span>{recipe.recommendationReason}
-              </p>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         <section className="mb-12">
           <div className="flex items-end gap-8 mb-6">
