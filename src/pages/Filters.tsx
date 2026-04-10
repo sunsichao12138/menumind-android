@@ -388,10 +388,10 @@ export default function Filters() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1, transition: { delay: 0.8 } }}
                   onClick={() => setShowAll(true)}
-                  className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border border-zinc-200 bg-white text-zinc-500 font-bold text-sm hover:bg-zinc-50 active:scale-[0.98] transition-all editorial-shadow"
+                  className="w-full flex items-center justify-center gap-1 py-3 text-zinc-400 text-sm font-medium hover:text-zinc-600 active:scale-95 transition-all"
                 >
-                  <ChevronsDown size={16} />
-                  查看更多推荐
+                  查看更多
+                  <ChevronsDown size={14} />
                 </motion.button>
               )}
             </motion.section>
