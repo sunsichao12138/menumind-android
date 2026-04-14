@@ -224,18 +224,19 @@ router.post("/recommend", async (req: Request, res: Response) => {
       return { ...r, _tagScore: tagScore, _sceneTagHits: sceneTagHits, _combinedTagScore: combinedTagScore, _score: tagScore + inventoryScore + tasteScore, _inventoryMatched: matchedCount, _tasteScore: tasteScore };
     });
 
-    // 硬筛策略：优先保留场景标签匹配的菜品，不够时再放宽到口味标签
+    // 硬筛：场景标签必须匹配，不匹配直接排除
     const sceneMatched = candidates.filter((r: any) => r._sceneTagHits > 0);
-    if (sceneMatched.length >= 5) {
+    if (sceneMatched.length >= 3) {
       candidates = sceneMatched;
-      console.log(`[AI] Hard tag filter: kept ${candidates.length} scene-matched recipes`);
+      console.log(`[AI] Hard scene filter: kept ${candidates.length} scene-matched recipes`);
     } else {
+      // 场景匹配不足 3 道，放宽到口味标签兜底
       const tagMatched = candidates.filter((r: any) => r._combinedTagScore > 0);
       if (tagMatched.length >= 3) {
         candidates = tagMatched;
-        console.log(`[AI] Hard tag filter: only ${sceneMatched.length} scene-matched, relaxed to ${candidates.length} combined-matched`);
+        console.log(`[AI] Hard scene filter: only ${sceneMatched.length} scene-matched, relaxed to ${candidates.length} combined-matched`);
       } else {
-        console.log(`[AI] Hard tag filter: only ${tagMatched.length} matched, keeping all ${candidates.length}`);
+        console.log(`[AI] Hard scene filter: only ${tagMatched.length} matched, keeping all ${candidates.length}`);
       }
     }
 
