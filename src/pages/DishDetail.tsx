@@ -57,8 +57,8 @@ export default function DishDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white max-w-md mx-auto flex items-center justify-center">
-        <div className="w-10 h-10 border-2 border-zinc-200 border-t-black rounded-full animate-spin" />
+      <div className="min-h-screen bg-surface max-w-md mx-auto flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
       </div>
     );
   }
@@ -116,7 +116,7 @@ export default function DishDetail() {
         </section>
 
         <section className="flex flex-wrap gap-2 mb-8">
-          <span className="px-4 py-1.5 bg-black text-white text-[11px] font-bold rounded-full">
+          <span className="px-4 py-1.5 bg-primary text-white text-[11px] font-bold rounded-full shadow-md shadow-primary/20">
             {recipe.tags[0]}
           </span>
           <span className="px-4 py-1.5 bg-zinc-50 text-zinc-500 text-[11px] font-bold rounded-full border border-zinc-100">
@@ -132,10 +132,10 @@ export default function DishDetail() {
 
         {recipe.recommendationReason && (
           <section className="mb-10">
-            <div className="bg-[#F7FBF9] p-6 rounded-3xl border border-[#E8F3ED]">
+            <div className="bg-orange-50/50 p-6 rounded-3xl border border-orange-100 shadow-sm">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm flex-shrink-0">
-                  <Sparkles className="text-[#4CAF50]" size={16} />
+                  <Sparkles className="text-primary" size={16} />
                 </div>
                 <p className="text-zinc-700 leading-relaxed text-sm">
                   <span className="font-bold text-zinc-900">推荐理由：</span>{recipe.recommendationReason}
@@ -156,7 +156,7 @@ export default function DishDetail() {
             >
               食材清单
               {activeTab === "ingredients" && (
-                <motion.div layoutId="activeTab" className="absolute -bottom-1 left-0 right-0 h-1 bg-black rounded-full" />
+                <motion.div layoutId="activeTab" className="absolute -bottom-1 left-0 right-0 h-1 bg-primary rounded-full shadow-sm shadow-primary/30" />
               )}
             </button>
             <button
@@ -168,7 +168,7 @@ export default function DishDetail() {
             >
               做法步骤
               {activeTab === "steps" && (
-                <motion.div layoutId="activeTab" className="absolute -bottom-1 left-0 right-0 h-1 bg-black rounded-full" />
+                <motion.div layoutId="activeTab" className="absolute -bottom-1 left-0 right-0 h-1 bg-primary rounded-full shadow-sm shadow-primary/30" />
               )}
             </button>
           </div>
@@ -214,7 +214,7 @@ export default function DishDetail() {
             <div className="space-y-6">
               {(recipe.steps && recipe.steps.length > 0 ? recipe.steps : ['大火快炒，锁住食材水分，保持口感。', '加入调料翻炒均匀。', '出锅装盘即可。']).map((step, index) => (
                 <div key={index} className="flex gap-4">
-                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-zinc-900 text-white flex items-center justify-center font-bold text-sm">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-md shadow-primary/20">
                     {index + 1}
                   </span>
                   <p className="text-zinc-600 text-sm leading-relaxed">
@@ -236,10 +236,10 @@ export default function DishDetail() {
               }
             }}
             className={cn(
-              "w-full flex items-center justify-center gap-2 py-4 rounded-full font-bold text-base transition-all active:scale-95 shadow-2xl",
+              "w-full flex items-center justify-center gap-2 py-4 rounded-full font-bold text-base transition-all active:scale-95 shadow-xl",
               isPlanned 
-                ? "bg-zinc-100 border-2 border-zinc-200 text-zinc-400" 
-                : "bg-black text-white"
+                ? "bg-surface-container-low border-2 border-outline-variant text-on-surface-variant" 
+                : "bg-primary text-white shadow-primary/40 hover:bg-orange-600"
             )}
           >
             {isPlanned ? <Check size={18} /> : <Plus size={18} />}

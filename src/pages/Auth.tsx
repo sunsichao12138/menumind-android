@@ -203,7 +203,7 @@ export default function Auth() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full flex items-center justify-center gap-2 bg-black text-white py-4 rounded-full font-bold text-base shadow-xl active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 bg-primary text-white shadow-md shadow-primary/30 py-4 rounded-full font-bold text-base shadow-xl active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
             <Loader2 size={20} className="animate-spin" />

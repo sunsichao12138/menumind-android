@@ -148,7 +148,7 @@ export default function Profile() {
             </button>
             <button 
               onClick={() => avatarInputRef.current?.click()}
-              className="absolute bottom-0 right-0 w-7 h-7 bg-black text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white active:scale-90 transition-transform"
+              className="absolute bottom-0 right-0 w-7 h-7 bg-primary text-white shadow-md shadow-primary/30 rounded-full flex items-center justify-center shadow-lg border-2 border-white active:scale-90 transition-transform"
             >
               <Camera size={12} />
             </button>
@@ -171,7 +171,7 @@ export default function Profile() {
                 <span className="text-zinc-300 text-xs">✎</span>
               </button>
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 bg-zinc-900 text-white text-[9px] font-black rounded italic">Lv.{profile?.level || 5}</span>
+                <span className="px-2 py-0.5 bg-primary text-white shadow-md shadow-primary/20 text-[9px] font-black rounded italic">Lv.{profile?.level || 5}</span>
                 <span className="text-zinc-400 text-[10px] font-bold uppercase tracking-widest">{profile?.points || 1280} 积分</span>
               </div>
             </div>
@@ -293,7 +293,7 @@ export default function Profile() {
                           className={cn(
                             "px-4 py-2 rounded-full border text-sm font-bold transition-all",
                             selectedRestrictions.includes(item) 
-                              ? "bg-black text-white border-black" 
+                              ? "bg-primary text-white shadow-md shadow-primary/30 border-black" 
                               : "border-zinc-100 text-zinc-600 hover:bg-zinc-50"
                           )}
                         >
@@ -313,7 +313,7 @@ export default function Profile() {
                           className={cn(
                             "px-4 py-2 rounded-full border text-sm font-bold transition-all",
                             selectedTastes.includes(item) 
-                              ? "bg-black text-white border-black" 
+                              ? "bg-primary text-white shadow-md shadow-primary/30 border-black" 
                               : "border-zinc-100 text-zinc-600 hover:bg-zinc-50"
                           )}
                         >
@@ -326,7 +326,7 @@ export default function Profile() {
 
                 <button 
                   onClick={savePreferences}
-                  className="w-full bg-black text-white py-4 rounded-full font-bold text-base shadow-xl active:scale-95 transition-all"
+                  className="w-full bg-primary text-white shadow-md shadow-primary/30 py-4 rounded-full font-bold text-base shadow-xl active:scale-95 transition-all"
                 >
                   保存设置
                 </button>
@@ -518,7 +518,7 @@ export default function Profile() {
                 <button
                   onClick={handleSaveName}
                   disabled={!editingName.trim()}
-                  className="flex-1 py-3 rounded-full bg-black text-white font-bold text-sm active:scale-95 transition-all disabled:opacity-40"
+                  className="flex-1 py-3 rounded-full bg-primary text-white shadow-md shadow-primary/30 font-bold text-sm active:scale-95 transition-all disabled:opacity-40"
                 >
                   保存
                 </button>

@@ -164,7 +164,7 @@ export default function Plan() {
             {selectedIds.length === plannedRecipes.length ? "取消全选" : "全选所有"}
             <div className={cn(
               "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
-              selectedIds.length === plannedRecipes.length ? "bg-black border-black text-white" : "border-zinc-300"
+              selectedIds.length === plannedRecipes.length ? "bg-primary border-primary text-white shadow-md shadow-primary/20" : "border-outline-variant"
             )}>
               {selectedIds.length === plannedRecipes.length ? (
                 <Check size={12} strokeWidth={3} />
@@ -190,7 +190,7 @@ export default function Plan() {
                 onClick={() => navigate(`/recipe/${recipe.id}`)}
                 className={cn(
                   "p-3 bg-white border rounded-3xl shadow-sm flex items-center gap-4 cursor-pointer transition-all editorial-shadow relative group",
-                  selectedIds.includes(recipe.id) ? "border-black ring-1 ring-black" : "border-zinc-100"
+                  selectedIds.includes(recipe.id) ? "border-primary ring-1 ring-primary shadow-md shadow-primary/10" : "border-outline-variant"
                 )}
               >
                 <div 
@@ -199,7 +199,7 @@ export default function Plan() {
                 >
                   <div className={cn(
                     "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
-                    selectedIds.includes(recipe.id) ? "bg-black border-black text-white" : "border-zinc-200"
+                    selectedIds.includes(recipe.id) ? "bg-primary border-primary text-white shadow-sm shadow-primary/20" : "border-outline-variant"
                   )}>
                     {selectedIds.includes(recipe.id) && <Check size={14} strokeWidth={3} />}
                   </div>
@@ -253,7 +253,7 @@ export default function Plan() {
             </div>
             <button 
               onClick={() => navigate("/filters")}
-              className="flex items-center gap-2 bg-black text-white px-8 py-4 rounded-full font-bold text-sm shadow-xl active:scale-95 transition-all"
+              className="flex items-center gap-2 bg-gradient-to-r from-primary to-orange-500 text-white px-8 py-4 rounded-full font-bold text-sm shadow-xl shadow-primary/30 active:scale-95 transition-all"
             >
               <Sparkles size={18} />
               <span>去发现美味</span>
@@ -297,7 +297,7 @@ export default function Plan() {
                     }
                   }}
                   className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-all active:scale-90 flex-shrink-0 ${
-                    isInPlan(recipe.id) ? "bg-zinc-100 text-zinc-400" : "bg-black text-white"
+                    isInPlan(recipe.id) ? "bg-surface-container-low text-on-surface-variant" : "bg-primary text-white shadow-md shadow-primary/30"
                   }`}
                 >
                   {isInPlan(recipe.id) ? <Check size={16} /> : <Plus size={16} />}
@@ -357,7 +357,7 @@ export default function Plan() {
             className={cn(
               "w-full py-5 rounded-full font-bold text-lg shadow-2xl flex items-center justify-center gap-3 transition-all relative z-10",
               selectedIds.length > 0 && !loadingConsume
-                ? "bg-black text-white active:scale-95"
+                ? "bg-primary text-white shadow-xl shadow-primary/40 active:scale-95 hover:bg-orange-600"
                 : "bg-zinc-200 text-zinc-400 cursor-not-allowed"
             )}
           >
@@ -392,7 +392,7 @@ export default function Plan() {
               </button>
 
               <div className="flex items-start gap-4 mb-6 mt-2 pr-8">
-                <div className="w-14 h-14 bg-blue-50/50 text-blue-500 rounded-full flex items-center justify-center shrink-0 border border-blue-100/50">
+                <div className="w-14 h-14 bg-orange-50/50 text-primary rounded-full flex items-center justify-center shrink-0 border border-orange-100/50">
                   <ShoppingBasket size={24} />
                 </div>
                 <div className="flex flex-col mt-1">
@@ -454,7 +454,7 @@ export default function Plan() {
                     "w-full py-[1.125rem] rounded-[24px] font-bold text-[15px] shadow-xl transition-all flex items-center justify-center gap-2",
                     consuming
                       ? "bg-zinc-300 text-zinc-500 cursor-not-allowed"
-                      : "bg-black text-white active:scale-95"
+                      : "bg-primary text-white shadow-lg shadow-primary/30 hover:bg-orange-600 active:scale-95"
                   )}
                 >
                   {consuming && <Loader2 size={16} className="animate-spin" />}

@@ -16,7 +16,7 @@ export default function Layout() {
           className={({ isActive }) =>
             cn(
               "flex flex-col items-center gap-1 transition-colors",
-              isActive ? "text-black" : "text-zinc-400"
+              isActive ? "text-primary drop-shadow-sm" : "text-zinc-400"
             )
           }
         >
@@ -28,7 +28,7 @@ export default function Layout() {
           className={({ isActive }) =>
             cn(
               "flex flex-col items-center gap-1 transition-colors",
-              isActive ? "text-black" : "text-zinc-400"
+              isActive ? "text-primary drop-shadow-sm" : "text-zinc-400"
             )
           }
         >
@@ -40,7 +40,7 @@ export default function Layout() {
           className={({ isActive }) =>
             cn(
               "flex flex-col items-center gap-1 transition-colors",
-              isActive ? "text-black" : "text-zinc-400"
+              isActive ? "text-primary drop-shadow-sm" : "text-zinc-400"
             )
           }
         >
@@ -52,7 +52,7 @@ export default function Layout() {
           className={({ isActive }) =>
             cn(
               "flex flex-col items-center gap-1 transition-colors",
-              isActive ? "text-black" : "text-zinc-400"
+              isActive ? "text-primary drop-shadow-sm" : "text-zinc-400"
             )
           }
         >

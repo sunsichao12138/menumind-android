@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, RefreshCw, Clock, Plus, Check, Heart, AlertTriangle, Coffee, Compass } from "lucide-react";
+import { Sparkles, RefreshCw, Clock, Plus, Check, Heart, AlertTriangle, Coffee, Compass, Star, Package } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { usePlan } from "../context/PlanContext";
 import { useFavorites } from "../context/FavoritesContext";
@@ -32,9 +32,23 @@ const SLOT_CONFIG = {
 };
 
 const ALL_TAGS = [
-  "来点甜的", "喝点东西", "快速搞定", "吃饱一点", "清库存", "低负担", 
-  "家常菜", "西式料理", "日韩风味", "火辣过瘾", "清爽解腻", 
-  "高蛋白", "低碳水", "深夜食堂", "元气早餐", "减脂餐", "宝宝餐", "微醺调酒"
+  { label: "低碳水", emoji: "🌿" },
+  { label: "宝宝餐", emoji: "👶" },
+  { label: "本周热点", emoji: "🔥" },
+  { label: "15分钟快手", emoji: "⏱️" },
+  { label: "元气早餐", emoji: "🌞" },
+  { label: "拯救冰箱", emoji: "🧊", special: true },
+  { label: "来点甜的", emoji: "🍰" },
+  { label: "喝点东西", emoji: "🥤" },
+  { label: "家常菜", emoji: "🍳" },
+  { label: "西式料理", emoji: "🍝" },
+  { label: "日韩风味", emoji: "🍣" },
+  { label: "火辣过瘾", emoji: "🌶️" },
+  { label: "清爽解腻", emoji: "🥗" },
+  { label: "高蛋白", emoji: "💪" },
+  { label: "深夜食堂", emoji: "🌙" },
+  { label: "减脂餐", emoji: "🥑" },
+  { label: "微醺调酒", emoji: "🍸" },
 ];
 
 export default function Home() {
@@ -90,15 +104,19 @@ export default function Home() {
   }, []);
 
   const [currentTags, setCurrentTags] = useState(() => {
-    return [...ALL_TAGS].sort(() => 0.5 - Math.random()).slice(0, 6);
+    // Always include "拯救冰箱" as the special tag, plus 5 random others
+    const special = ALL_TAGS.find(t => t.special);
+    const others = ALL_TAGS.filter(t => !t.special).sort(() => 0.5 - Math.random()).slice(0, 5);
+    return special ? [...others, special] : others;
   });
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const refreshTags = () => {
     setIsRefreshing(true);
     setTimeout(() => {
-      const shuffled = [...ALL_TAGS].sort(() => 0.5 - Math.random());
-      setCurrentTags(shuffled.slice(0, 6));
+      const special = ALL_TAGS.find(t => t.special);
+      const others = ALL_TAGS.filter(t => !t.special).sort(() => 0.5 - Math.random()).slice(0, 5);
+      setCurrentTags(special ? [...others, special] : others);
       setIsRefreshing(false);
     }, 500);
   };
@@ -112,81 +130,102 @@ export default function Home() {
     return "夜深了，来点宵夜犒劳下自己？ ✨";
   };
 
+  // Generate a pseudo-random rating based on recipe id
+  const getRating = (id: string) => {
+    const hash = id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    return (4.0 + (hash % 10) / 10).toFixed(1);
+  };
+
   return (
-    <div className="px-6 py-12 space-y-8 animate-in fade-in duration-500">
+    <div className="px-5 py-12 space-y-7 animate-in fade-in duration-500">
+      {/* Header */}
       <section>
-        <h1 className="text-3xl font-bold text-on-surface tracking-tight">今日推荐</h1>
-        <p className="text-zinc-500 text-lg mt-1 font-bold">{getGreeting()}</p>
+        <h1 className="text-3xl font-extrabold text-on-surface tracking-tight">今日推荐</h1>
+        <p className="text-on-surface-variant text-lg mt-1 font-bold">{getGreeting()}</p>
       </section>
 
-      <section className="relative overflow-hidden rounded-xl bg-zinc-900 text-white shadow-lg px-8 py-6">
+      {/* AI Recommendation Banner */}
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-orange-500 to-amber-500 text-white shadow-xl shadow-primary/25 px-7 py-6">
         <div className="space-y-4 relative z-10">
-          <div className="flex items-center gap-2 opacity-80">
-            <Sparkles size={16} className="text-primary-container" />
-            <span className="text-xs tracking-wider uppercase font-bold">AI 智能推荐</span>
+          <div className="flex items-center gap-2 opacity-90">
+            <Sparkles size={16} className="text-white" />
+            <span className="text-xs tracking-wider uppercase font-bold text-white/90">AI 智能推荐</span>
           </div>
-          <h3 className="font-bold text-2xl">今天吃什么？</h3>
-          <p className="text-zinc-400 text-sm leading-relaxed">
+          <h3 className="font-extrabold text-2xl text-white">今天吃什么？</h3>
+          <p className="text-white/80 text-sm leading-relaxed">
             根据时间和你的偏好，帮你决定现在吃什么。
           </p>
           <button 
             onClick={() => navigate("/filters")}
-            className="w-full bg-white text-black font-bold rounded-full py-3 transition-transform active:scale-95 hover:bg-zinc-100"
+            className="w-full bg-white text-primary font-extrabold rounded-full py-3.5 transition-transform active:scale-95 hover:bg-orange-50 shadow-lg text-base"
           >
             开始推荐
           </button>
         </div>
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-zinc-800 to-transparent opacity-50 rounded-full -mr-16 -mt-16"></div>
+        {/* Decorative circles */}
+        <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full -ml-10 -mb-10"></div>
       </section>
 
+      {/* Quick Tags */}
       <section>
         <div className="flex justify-between items-center mb-4">
-          <h4 className="font-bold text-lg">你现在更想要</h4>
+          <h4 className="font-bold text-lg text-on-surface">你现在更想要</h4>
           <button 
             onClick={refreshTags}
             disabled={isRefreshing}
             className={cn(
-              "text-zinc-400 hover:text-zinc-600 p-2 rounded-full transition-all active:scale-90",
+              "text-on-surface-variant hover:text-primary p-2 rounded-full transition-all active:scale-90",
               isRefreshing && "animate-spin"
             )}
           >
-            <RefreshCw size={20} />
+            <RefreshCw size={18} />
           </button>
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2.5">
           <AnimatePresence mode="popLayout">
             {currentTags.map((tag) => (
               <motion.button
-                key={tag}
+                key={tag.label}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                onClick={() => { localStorage.removeItem("ai_recommend_cache"); navigate(`/filters?quick=true&tag=${tag}`); }}
-                className="py-3 px-2 border border-zinc-100 bg-white rounded-2xl text-sm font-medium hover:bg-zinc-50 active:scale-95 transition-all text-zinc-700 editorial-shadow truncate"
+                onClick={() => { localStorage.removeItem("ai_recommend_cache"); navigate(`/filters?quick=true&tag=${tag.label}`); }}
+                className={cn(
+                  "py-3 px-3 rounded-2xl text-sm font-bold active:scale-95 transition-all flex items-center justify-center gap-1.5 truncate",
+                  (tag as any).special
+                    ? "bg-primary text-white shadow-md shadow-primary/25 border border-primary"
+                    : "bg-white text-on-surface border border-orange-100/80 editorial-shadow hover:bg-orange-50/50"
+                )}
               >
-                {tag}
+                <span className="text-base">{tag.emoji}</span>
+                <span className="truncate">{tag.label}</span>
               </motion.button>
             ))}
           </AnimatePresence>
         </div>
       </section>
 
+      {/* Recipe Cards — 2 Column Grid */}
       <section className="space-y-4">
-        <div className="flex justify-between items-center mb-1">
-          <h4 className="font-bold text-lg">为你精选</h4>
+        <div className="flex justify-between items-center">
+          <h4 className="font-bold text-lg text-on-surface">为你精选</h4>
         </div>
 
         {!hasData ? (
-          <div className="flex flex-col items-center py-10 text-center">
-            <Sparkles size={32} className="text-zinc-300 mb-3" />
-            <p className="text-zinc-400 text-sm font-medium">正在为你准备推荐...</p>
-            <p className="text-zinc-300 text-xs mt-1">添加冰箱食材后推荐更精准</p>
+          <div className="flex flex-col items-center py-12 text-center">
+            <div className="w-16 h-16 rounded-full bg-orange-50 flex items-center justify-center mb-4">
+              <Sparkles size={28} className="text-primary/40" />
+            </div>
+            <p className="text-on-surface-variant text-sm font-semibold">正在为你准备推荐...</p>
+            <p className="text-on-surface-variant/60 text-xs mt-1">添加冰箱食材后推荐更精准</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {picks.map((pick, index) => {
               const slotCfg = SLOT_CONFIG[pick.slot];
               const SlotIcon = slotCfg.icon;
+              const rating = getRating(pick.id);
               return (
                 <motion.article
                   key={pick.id}
@@ -194,66 +233,94 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0, transition: { delay: index * 0.1 } }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate(`/recipe/${pick.id}`)}
-                  className="p-3 bg-white border border-zinc-100 rounded-3xl shadow-sm flex items-center gap-4 cursor-pointer editorial-shadow"
+                  className="bg-white rounded-3xl overflow-hidden border border-orange-100/60 shadow-sm cursor-pointer hover:shadow-md transition-shadow editorial-shadow flex gap-3.5 p-3"
                 >
-                  <div className="w-20 h-20 flex-shrink-0 bg-zinc-50 rounded-2xl overflow-hidden">
+                  {/* Left: Image */}
+                  <div className="w-28 h-28 flex-shrink-0 rounded-2xl overflow-hidden bg-surface-container-low">
                     <img
                       src={pick.image}
                       alt={pick.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                       referrerPolicy="no-referrer"
                     />
                   </div>
-                  <div className="flex-grow min-w-0">
-                    <div className="flex flex-col mb-1">
-                      <div className="flex items-center gap-2">
-                        <h5 className="text-base font-bold text-zinc-900 truncate">{pick.name}</h5>
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFavorite(pick);
-                          }}
-                          className={cn(
-                            "p-1 rounded-full transition-all active:scale-90",
-                            isFavorite(pick.id) ? "text-red-500" : "text-zinc-300 hover:text-zinc-400"
-                          )}
-                        >
-                          <Heart size={14} fill={isFavorite(pick.id) ? "currentColor" : "none"} />
-                        </button>
+
+                  {/* Right: Content */}
+                  <div className="flex-grow min-w-0 flex flex-col justify-between py-0.5">
+                    {/* Title + Rating + Favorite */}
+                    <div className="flex items-center gap-1.5">
+                      <h5 className="text-base font-extrabold text-on-surface truncate flex-grow">{pick.name}</h5>
+                      <div className="flex items-center gap-0.5 flex-shrink-0">
+                        <Star size={12} className="text-amber-400 fill-amber-400" />
+                        <span className="text-xs font-bold text-amber-500">{rating}</span>
                       </div>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className={cn(
-                          "flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full border whitespace-nowrap",
-                          slotCfg.color
-                        )}>
-                          <SlotIcon size={10} />
-                          {slotCfg.label}
-                        </span>
-                        <p className="text-xs text-zinc-500 leading-tight truncate">{pick.hint}</p>
-                      </div>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(pick);
+                        }}
+                        className={cn(
+                          "p-0.5 rounded-full transition-all active:scale-90 flex-shrink-0",
+                          isFavorite(pick.id) ? "text-red-500" : "text-zinc-300 hover:text-zinc-400"
+                        )}
+                      >
+                        <Heart size={16} fill={isFavorite(pick.id) ? "currentColor" : "none"} />
+                      </button>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center text-xs text-zinc-400">
-                        <Clock size={14} className="mr-1" />
-                        <span>{pick.time}</span>
+
+                    {/* Hint */}
+                    <p className="text-xs text-on-surface-variant leading-snug line-clamp-1">
+                      {pick.hint || pick.description}
+                    </p>
+
+                    {/* Slot Tag + Description Tag */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className={cn(
+                        "flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full border whitespace-nowrap",
+                        slotCfg.color
+                      )}>
+                        <SlotIcon size={10} />
+                        {slotCfg.label}
+                      </span>
+                      {pick.description && (
+                        <span className="text-[10px] text-on-surface-variant bg-surface-container-low px-2 py-0.5 rounded-full font-medium truncate">
+                          {pick.description.slice(0, 10)}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Time + Inventory + Add Button */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 text-[11px] text-on-surface-variant font-medium">
+                        <span className="flex items-center gap-1">
+                          <Clock size={11} />
+                          {pick.time}
+                        </span>
+                        {(pick.inventoryMatch ?? pick.ingredients?.have?.length ?? 0) > 0 && (
+                          <span className="flex items-center gap-1">
+                            <Package size={11} />
+                            {pick.inventoryMatch ?? pick.ingredients?.have?.length}种食材
+                          </span>
+                        )}
                       </div>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (isInPlan(pick.id)) {
+                            removeFromPlan(pick.id);
+                          } else {
+                            addToPlan(pick);
+                          }
+                        }}
+                        className={cn(
+                          "flex-shrink-0 flex items-center justify-center rounded-full w-8 h-8 transition-all active:scale-90",
+                          isInPlan(pick.id) ? "bg-surface-container-low text-on-surface-variant" : "bg-primary text-white shadow-sm shadow-primary/30"
+                        )}
+                      >
+                        {isInPlan(pick.id) ? <Check size={16} /> : <Plus size={16} />}
+                      </button>
                     </div>
                   </div>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (isInPlan(pick.id)) {
-                        removeFromPlan(pick.id);
-                      } else {
-                        addToPlan(pick);
-                      }
-                    }}
-                    className={`flex-shrink-0 flex items-center justify-center rounded-full w-8 h-8 transition-all active:scale-90 ${
-                      isInPlan(pick.id) ? "bg-zinc-100 text-zinc-400" : "bg-black text-white"
-                    }`}
-                  >
-                    {isInPlan(pick.id) ? <Check size={18} /> : <Plus size={18} />}
-                  </button>
                 </motion.article>
               );
             })}

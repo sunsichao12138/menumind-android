@@ -29,7 +29,7 @@ export default function AllDishes() {
   if (loading) {
     return (
       <div className="min-h-screen bg-surface max-w-md mx-auto flex items-center justify-center">
-        <div className="w-10 h-10 border-2 border-zinc-200 border-t-black rounded-full animate-spin" />
+        <div className="w-10 h-10 border-2 border-zinc-200 border-t-primary rounded-full animate-spin" />
       </div>
     );
   }
@@ -124,7 +124,7 @@ export default function AllDishes() {
                 "w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-95 shadow-sm",
                 planned
                   ? "bg-zinc-100 text-zinc-400 border border-zinc-200"
-                  : "bg-black text-white"
+                  : "bg-primary text-white shadow-md shadow-primary/30"
               )}
             >
               {planned ? <Check size={14} /> : <Plus size={14} />}
@@ -169,7 +169,7 @@ export default function AllDishes() {
               className={cn(
                 "px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap border transition-all active:scale-95",
                 activeCategory === cat 
-                  ? "bg-black text-white border-black shadow-md" 
+                  ? "bg-primary text-white shadow-md shadow-primary/30 border-black shadow-md" 
                   : "bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50"
               )}
             >

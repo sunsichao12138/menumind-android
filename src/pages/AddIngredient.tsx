@@ -286,7 +286,7 @@ export default function AddIngredient({ isOpen, onClose, onAdded }: AddIngredien
                     onClick={() => handleAiFill("auto")}
                     disabled={processingSource === "auto"}
                     className={cn(
-                      "flex-shrink-0 bg-black text-white rounded-2xl px-4 flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg",
+                      "flex-shrink-0 bg-primary text-white shadow-md shadow-primary/30 rounded-2xl px-4 flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg",
                       processingSource === "auto" && "opacity-50"
                     )}
                     title="自动识别录入"
@@ -379,7 +379,7 @@ export default function AddIngredient({ isOpen, onClose, onAdded }: AddIngredien
               onClick={handleSubmit}
               disabled={submitting || !formData.name || !formData.amount}
               className={cn(
-                "w-full bg-black text-white py-3.5 rounded-full font-bold shadow-xl active:scale-95 transition-all",
+                "w-full bg-primary text-white shadow-md shadow-primary/30 py-3.5 rounded-full font-bold shadow-xl active:scale-95 transition-all",
                 (submitting || !formData.name || !formData.amount) && "opacity-50 cursor-not-allowed"
               )}
             >

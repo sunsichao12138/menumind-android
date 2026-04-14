@@ -111,7 +111,7 @@ export default function SetupProfile() {
             </div>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-1 right-1 w-9 h-9 bg-black text-white rounded-full flex items-center justify-center shadow-lg border-3 border-white active:scale-90 transition-transform"
+              className="absolute bottom-1 right-1 w-9 h-9 bg-primary text-white shadow-md shadow-primary/30 rounded-full flex items-center justify-center shadow-lg border-3 border-white active:scale-90 transition-transform"
             >
               <Camera size={14} />
             </button>
@@ -168,7 +168,7 @@ export default function SetupProfile() {
         <button
           onClick={handleSave}
           disabled={!displayName.trim() || isSaving}
-          className="w-full flex items-center justify-center gap-2 bg-black text-white py-4 rounded-full font-bold text-base shadow-xl active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 bg-primary text-white shadow-md shadow-primary/30 py-4 rounded-full font-bold text-base shadow-xl active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {isSaving ? (
             <Loader2 size={20} className="animate-spin" />

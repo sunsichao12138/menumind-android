@@ -104,33 +104,33 @@ export default function Fridge() {
 
       <main className="space-y-4">
         <section className="mt-1">
-          <div className="bg-black text-white rounded-[28px] shadow-lg relative overflow-hidden py-4 px-5">
+          <div className="bg-gradient-to-br from-primary to-orange-500 text-white rounded-[28px] shadow-xl shadow-primary/30 relative overflow-hidden py-4 px-5">
             <div className="relative z-10">
               <div className="grid grid-cols-3 gap-3">
-                <div className="flex flex-col items-center justify-center bg-zinc-800 py-2.5 rounded-[20px]">
+                <div className="flex flex-col items-center justify-center bg-white/20 backdrop-blur-sm py-2.5 rounded-[20px]">
                   <span className="text-2xl font-bold text-white">{ingredients.length}</span>
                   <span className="text-[9px] font-bold mt-0.5 text-zinc-300">现有食材</span>
                 </div>
-                <div className="flex flex-col items-center justify-center bg-zinc-800 py-2.5 rounded-[20px]">
+                <div className="flex flex-col items-center justify-center bg-white/20 backdrop-blur-sm py-2.5 rounded-[20px]">
                   <span className="text-2xl font-bold text-red-400">{expiringCount}</span>
                   <span className="text-[9px] font-bold mt-0.5 text-zinc-300">快过期</span>
                 </div>
-                <div className="flex flex-col items-center justify-center bg-zinc-800 py-2.5 rounded-[20px]">
+                <div className="flex flex-col items-center justify-center bg-white/20 backdrop-blur-sm py-2.5 rounded-[20px]">
                   <span className={cn("text-2xl font-bold", expiredCount > 0 ? "text-orange-400" : "text-white")}>{expiredCount}</span>
                   <span className="text-[9px] font-bold mt-0.5 text-zinc-300">已过期</span>
                 </div>
               </div>
             </div>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-zinc-800 to-transparent opacity-50 rounded-full -mr-16 -mt-16"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/20 to-transparent opacity-50 rounded-full -mr-16 -mt-16"></div>
           </div>
         </section>
 
         <section className="flex gap-3">
           <button 
             onClick={() => setIsAddModalOpen(true)}
-            className="flex-shrink-0 flex flex-row items-center justify-center gap-2 bg-white rounded-2xl shadow-sm border border-zinc-100 hover:bg-zinc-50 transition-colors active:scale-95 py-3 px-8"
+            className="flex-shrink-0 flex flex-row items-center justify-center gap-2 bg-primary text-white rounded-2xl shadow-md shadow-primary/20 hover:bg-orange-600 transition-colors active:scale-95 py-3 px-8 border border-transparent"
           >
-            <Plus className="text-black" size={18} />
+            <Plus className="text-white" size={18} />
             <span className="text-xs font-bold whitespace-nowrap">添加食材</span>
           </button>
           <div className="flex-shrink relative min-w-0">
@@ -140,7 +140,7 @@ export default function Fridge() {
               placeholder="搜索食材..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-full bg-white border border-zinc-100 rounded-2xl pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-black transition-all shadow-sm"
+              className="w-full h-full bg-white border border-outline-variant rounded-2xl pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all shadow-sm"
             />
           </div>
         </section>
@@ -153,7 +153,7 @@ export default function Fridge() {
                 onClick={() => setActiveCategory(cat)}
                 className={cn(
                   "px-6 py-2 rounded-full text-sm font-bold whitespace-nowrap border transition-colors",
-                  activeCategory === cat ? "bg-black text-white border-black" : "bg-white text-zinc-600 border-zinc-200"
+                  activeCategory === cat ? "bg-primary text-white border-primary shadow-md shadow-primary/20" : "bg-white text-zinc-600 border-outline-variant"
                 )}
               >
                 {cat}
@@ -165,7 +165,7 @@ export default function Fridge() {
         <section className="space-y-4">
           {loadingIngredients ? (
             <div className="flex justify-center py-12">
-              <div className="w-8 h-8 border-2 border-zinc-200 border-t-black rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
             </div>
           ) : filteredIngredients.length === 0 ? (
             <div className="text-center py-12 text-zinc-400">

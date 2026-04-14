@@ -142,7 +142,7 @@ export default function Filters() {
                           onClick={() => setPeopleCount(peopleCount === opt ? "" : opt)}
                           className={cn(
                             "px-6 py-2.5 rounded-full text-sm font-medium transition-all border",
-                            peopleCount === opt ? "bg-black text-white border-black" : "bg-white text-zinc-900 border-zinc-200 shadow-sm"
+                            peopleCount === opt ? "bg-primary text-white border-primary shadow-md shadow-primary/20" : "bg-white text-zinc-900 border-outline-variant shadow-sm"
                           )}
                         >
                           {opt}
@@ -160,7 +160,7 @@ export default function Filters() {
                           onClick={() => setPrepTime(prepTime === opt ? "" : opt)}
                           className={cn(
                             "px-2 py-2.5 rounded-full text-xs font-medium transition-all border",
-                            prepTime === opt ? "bg-black text-white border-black" : "bg-white text-zinc-900 border-zinc-200 shadow-sm"
+                            prepTime === opt ? "bg-primary text-white border-primary shadow-md shadow-primary/20" : "bg-white text-zinc-900 border-outline-variant shadow-sm"
                           )}
                         >
                           {opt}
@@ -178,7 +178,7 @@ export default function Filters() {
                           onClick={() => setMealType(mealType === opt ? "" : opt)}
                           className={cn(
                             "px-2 py-2 rounded-xl text-xs font-medium transition-all border",
-                            mealType === opt ? "bg-black text-white border-black" : "bg-white text-zinc-900 border-zinc-200 shadow-sm"
+                            mealType === opt ? "bg-primary text-white border-primary shadow-md shadow-primary/20" : "bg-white text-zinc-900 border-outline-variant shadow-sm"
                           )}
                         >
                           {opt}
@@ -196,7 +196,7 @@ export default function Filters() {
                           onClick={() => setTastePreference(tastePreference === opt ? "" : opt)}
                           className={cn(
                             "px-5 py-2 rounded-lg text-sm cursor-pointer transition-all border",
-                            tastePreference === opt ? "bg-black text-white border-black" : "bg-white text-zinc-500 border-zinc-200 shadow-sm"
+                            tastePreference === opt ? "bg-primary text-white border-primary shadow-md shadow-primary/20" : "bg-white text-zinc-500 border-outline-variant shadow-sm"
                           )}
                         >
                           {opt}
@@ -220,7 +220,7 @@ export default function Filters() {
                         onClick={() => setUseInventory(true)}
                         className={cn(
                           "px-4 py-1.5 rounded-full text-xs font-bold transition-all",
-                          useInventory ? "bg-black text-white" : "text-zinc-400"
+                          useInventory ? "bg-primary text-white shadow-sm" : "text-zinc-400"
                         )}
                       >
                         是
@@ -229,7 +229,7 @@ export default function Filters() {
                         onClick={() => setUseInventory(false)}
                         className={cn(
                           "px-4 py-1.5 rounded-full text-xs font-bold transition-all",
-                          !useInventory ? "bg-black text-white" : "text-zinc-400"
+                          !useInventory ? "bg-primary text-white shadow-sm" : "text-zinc-400"
                         )}
                       >
                         否
@@ -241,7 +241,7 @@ export default function Filters() {
                     onClick={handleGenerate}
                     disabled={isLoading}
                     className={cn(
-                      "w-full rounded-full bg-black text-white font-bold text-xl flex items-center justify-center gap-3 py-4 shadow-xl active:scale-[0.98] transition-all",
+                      "w-full rounded-full bg-primary text-white font-bold text-xl flex items-center justify-center gap-3 py-4 shadow-xl shadow-primary/30 active:scale-[0.98] transition-all hover:bg-orange-600",
                       isLoading && "opacity-50 cursor-not-allowed scale-95"
                     )}
                   >
@@ -278,9 +278,9 @@ export default function Filters() {
                 <motion.div 
                   animate={{ rotate: 360 }}
                   transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  className="w-20 h-20 rounded-full border-4 border-zinc-100 border-t-black"
+                  className="w-20 h-20 rounded-full border-4 border-primary/20 border-t-primary"
                 />
-                <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black animate-pulse" size={24} />
+                <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary animate-pulse" size={24} />
               </div>
               <div className="text-center space-y-2">
                 <p className="text-lg font-bold text-zinc-900">AI 正在为您构思菜单...</p>
@@ -373,7 +373,7 @@ export default function Filters() {
                         }}
                         className={cn(
                           "flex-shrink-0 self-center w-10 h-10 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-all",
-                          isInPlan(recipe.id) ? "bg-zinc-100 text-zinc-400" : "bg-black text-white"
+                          isInPlan(recipe.id) ? "bg-surface-container-low text-on-surface-variant" : "bg-primary text-white shadow-md shadow-primary/30"
                         )}
                       >
                         {isInPlan(recipe.id) ? <Check size={18} /> : <Plus size={18} />}

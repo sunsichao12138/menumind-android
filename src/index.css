@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #038b5f;
-  --color-primary-container: #69f6b8;
-  --color-on-primary-container: #002114;
-  --color-surface: #f5f7f9;
-  --color-surface-container-low: #eef1f3;
+  --color-primary: #FF5C00;
+  --color-primary-container: #FFF0E5;
+  --color-on-primary-container: #4A1800;
+  --color-surface: #F8F1EB;
+  --color-surface-container-low: #F5EFEB;
   --color-surface-container-lowest: #ffffff;
-  --color-on-surface: #2c2f31;
-  --color-on-surface-variant: #6b7280;
-  --color-outline-variant: rgba(171, 173, 175, 0.15);
+  --color-on-surface: #2E2521;
+  --color-on-surface-variant: #7A6F6B;
+  --color-outline-variant: rgba(186, 179, 175, 0.2);
 
   --font-sans: "Inter", "Source Han Sans SC", "Source Han Sans", ui-sans-serif, system-ui, sans-serif;
   
