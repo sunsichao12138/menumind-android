@@ -185,9 +185,10 @@ export default function Fridge() {
                     <h3 className="font-bold text-lg">{item.name}</h3>
                     <span className={cn(
                       "text-xs font-bold px-2 py-1 rounded",
+                      item.expiryDays <= 0 ? "bg-orange-50 text-orange-600" :
                       item.expiryDays <= 3 ? "bg-red-50 text-red-600" : "bg-zinc-100 text-zinc-500"
                     )}>
-                      {item.expiryDays}天内
+                      {item.expiryDays <= 0 ? "已过期" : `${item.expiryDays}天内`}
                     </span>
                   </div>
                   <div className="flex items-center justify-end gap-3">

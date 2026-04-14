@@ -139,7 +139,8 @@ router.post("/recommend", async (req: Request, res: Response) => {
     const sceneTags = getSceneTags(mealType || "正餐");
     const maxMinutes = getMaxMinutes(prepTime || "30分钟内");
     const restrictions = profile?.restrictions || [];
-    const inventoryNames = (ingredients || []).map((i: any) => i.name);
+    const validIngredients = (ingredients || []).filter((i: any) => (i.expiry_days || 0) > 0);
+    const inventoryNames = validIngredients.map((i: any) => i.name);
 
     let candidates = (allRecipes || [])
       // 过滤时间
@@ -266,7 +267,7 @@ router.post("/recommend", async (req: Request, res: Response) => {
     // 第二阶段：让模型排序和包装
     // ════════════════════════════════════════
 
-    const ingredientList = (ingredients || [])
+    const ingredientList = validIngredients
       .map((i: any) => `${i.name}(${i.amount}, 剩余${i.expiry_days}天)`)
       .join("、");
 
@@ -636,7 +637,7 @@ ${ingredientList || "暂无食材"}
 
   const recipes = JSON.parse(jsonStr);
 
-  const inventoryNames = (ingredients || []).map((i: any) => i.name);
+  const inventoryNames = (ingredients || []).filter((i: any) => (i.expiry_days || 0) > 0).map((i: any) => i.name);
 
   const savedRecipes = [];
   for (const recipe of recipes) {
@@ -858,7 +859,7 @@ router.get("/home-picks", async (req: Request, res: Response) => {
     console.log(`[HomePicks][Perf] DB queries: ${t1 - t0}ms`);
 
     const recipes = allRecipes || [];
-    const inventoryNames = (ingredients || []).map((i: any) => i.name);
+    const inventoryNames = (ingredients || []).filter((i: any) => (i.expiry_days || 0) > 0).map((i: any) => i.name);
     const restrictions = profile?.restrictions || [];
     const tastePrefs = profile?.taste_preferences || [];
 
