@@ -7,6 +7,7 @@ import AddIngredient from "./AddIngredient";
 import { Ingredient } from "../types";
 import { api } from "../api/client";
 import { useFamily } from "../context/FamilyContext";
+import FamilyModal from "../components/FamilyModal";
 
 export default function Fridge() {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ export default function Fridge() {
   const [showLogs, setShowLogs] = useState(false);
   const [logs, setLogs] = useState<any[]>([]);
   const [showFamilySwitcher, setShowFamilySwitcher] = useState(false);
+  const [showFamilyModal, setShowFamilyModal] = useState(false);
   const { families, currentFamily, mode, switchMode } = useFamily();
 
   // 从 API 加载食材
@@ -320,7 +322,7 @@ export default function Fridge() {
                 </button>
               ))}
               <button
-                onClick={() => { setShowFamilySwitcher(false); navigate("/profile"); }}
+                onClick={() => { setShowFamilySwitcher(false); setShowFamilyModal(true); }}
                 className="w-full px-4 py-3 text-left text-xs font-bold flex items-center gap-3 text-primary border-t border-zinc-100 hover:bg-primary/5 transition-colors"
               >
                 <UserPlus size={14} /> 创建或加入家庭
@@ -378,6 +380,8 @@ export default function Fridge() {
           </div>
         )}
       </AnimatePresence>
+
+      <FamilyModal isOpen={showFamilyModal} onClose={() => setShowFamilyModal(false)} />
     </div>
   );
 }

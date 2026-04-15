@@ -6,6 +6,7 @@ import { usePlan } from "../context/PlanContext";
 import { cn } from "../lib/utils";
 import { api } from "../api/client";
 import { useFamily } from "../context/FamilyContext";
+import FamilyModal from "../components/FamilyModal";
 
 export default function Plan() {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export default function Plan() {
   const [consumeList, setConsumeList] = useState<Array<{name: string, requiredStr: string, amount: number, unit: string, stock: string}>>([]);
   const [loadingConsume, setLoadingConsume] = useState(false);
   const [showFamilySwitcher, setShowFamilySwitcher] = useState(false);
+  const [showFamilyModal, setShowFamilyModal] = useState(false);
   const { families, currentFamily, mode, switchMode } = useFamily();
 
   const toggleSelect = (id: string, e: React.MouseEvent) => {
@@ -451,7 +453,7 @@ export default function Plan() {
                 </button>
               ))}
               <button
-                onClick={() => { setShowFamilySwitcher(false); navigate("/profile"); }}
+                onClick={() => { setShowFamilySwitcher(false); setShowFamilyModal(true); }}
                 className="w-full px-4 py-3 text-left text-xs font-bold flex items-center gap-3 text-primary border-t border-zinc-100 hover:bg-primary/5 transition-colors"
               >
                 <UserPlus size={14} /> 创建或加入家庭
@@ -460,6 +462,8 @@ export default function Plan() {
           </div>
         )}
       </AnimatePresence>
+
+      <FamilyModal isOpen={showFamilyModal} onClose={() => setShowFamilyModal(false)} />
     </div>
   );
 }
