@@ -969,8 +969,11 @@ router.get("/home-picks", async (req: Request, res: Response) => {
     const hour = req.query.hour ? parseInt(req.query.hour as string) : new Date().getHours();
     let timeTags: string[];
     let timeHint: string;
-    if (hour >= 7 && hour < 10) {
-      timeTags = ["早餐", "快手菜", "轻食"];
+    if (hour < 4) {
+      timeTags = ["宵夜", "小吃", "面条", "炒饭", "快手菜"];
+      timeHint = "深夜食堂";
+    } else if (hour >= 4 && hour < 10) {
+      timeTags = ["早餐", "轻食", "小食"];
       timeHint = "适合早餐";
     } else if (hour >= 10 && hour < 14) {
       timeTags = ["家常菜", "快手菜", "下饭菜", "硬菜"];

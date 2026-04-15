@@ -123,6 +123,7 @@ export default function Home() {
 
   const getGreeting = () => {
     const hour = new Date().getHours();
+    if (hour < 4) return "夜深了，来点宵夜犒劳下自己？ ✨";
     if (hour < 11) return "早上好，来份元气早餐吧 ☀️";
     if (hour < 14) return "中午好，该吃午饭啦 🍱";
     if (hour < 17) return "下午好，该吃下午茶了 ☕️";
