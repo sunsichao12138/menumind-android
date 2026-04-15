@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Sparkles, Clock, Check, Trash2, X, ChefHat, ShoppingBasket, Loader2, ChevronDown, ChevronUp, Users, User } from "lucide-react";
+import { Calendar, Sparkles, Clock, Check, Trash2, X, ChefHat, ShoppingBasket, Loader2, ChevronDown, ChevronUp, Users, User, UserPlus } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { usePlan } from "../context/PlanContext";
 import { cn } from "../lib/utils";
@@ -150,14 +150,13 @@ export default function Plan() {
     <div className="px-6 py-12 space-y-8 animate-in fade-in duration-500 pb-32">
       <section className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-on-surface tracking-tight">今日计划</h1>
-        <button
+        <span
           onClick={() => setShowFamilySwitcher(!showFamilySwitcher)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-zinc-100 shadow-sm text-xs font-bold text-zinc-600 active:scale-95 transition-all"
+          className="flex items-center gap-1 text-sm font-bold text-zinc-500 active:text-primary transition-colors cursor-pointer select-none"
         >
-          {mode === "family" ? <Users size={14} className="text-primary" /> : <User size={14} />}
-          <span>{mode === "family" && currentFamily ? currentFamily.name : "个人"}</span>
-          <ChevronDown size={12} className="text-zinc-400" />
-        </button>
+          {mode === "family" && currentFamily ? currentFamily.name : "个人厨房"}
+          <ChevronDown size={14} className={cn("transition-transform", showFamilySwitcher && "rotate-180")} />
+        </span>
       </section>
 
       {plannedRecipes.length > 0 && (
@@ -438,25 +437,25 @@ export default function Plan() {
             >
               <button
                 onClick={() => { switchMode("personal"); setShowFamilySwitcher(false); }}
-                className={cn("w-full px-4 py-3 text-left text-sm font-bold flex items-center gap-3 transition-colors", mode === "personal" ? "bg-primary/5 text-primary" : "text-zinc-700 hover:bg-zinc-50")}
+                className={cn("w-full px-4 py-3 text-left text-sm font-bold flex items-center gap-3 transition-colors", mode === "personal" ? "text-primary" : "text-zinc-700 hover:bg-zinc-50")}
               >
-                <User size={16} /> 个人模式
+                <User size={16} /> 个人厨房
               </button>
-              {families.length > 0 ? (
-                families.map(f => (
-                  <button
-                    key={f.id}
-                    onClick={() => { switchMode("family", f.id); setShowFamilySwitcher(false); }}
-                    className={cn("w-full px-4 py-3 text-left text-sm font-bold flex items-center gap-3 transition-colors border-t border-zinc-50", currentFamily?.id === f.id && mode === "family" ? "bg-primary/5 text-primary" : "text-zinc-700 hover:bg-zinc-50")}
-                  >
-                    <Users size={16} /> {f.name}
-                  </button>
-                ))
-              ) : (
-                <div className="px-4 py-3 text-xs text-zinc-400 border-t border-zinc-50">
-                  暂未加入家庭，请在「我的」页面创建或加入
-                </div>
-              )}
+              {families.map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => { switchMode("family", f.id); setShowFamilySwitcher(false); }}
+                  className={cn("w-full px-4 py-3 text-left text-sm font-bold flex items-center gap-3 transition-colors border-t border-zinc-50", currentFamily?.id === f.id && mode === "family" ? "text-primary" : "text-zinc-700 hover:bg-zinc-50")}
+                >
+                  <Users size={16} /> {f.name}
+                </button>
+              ))}
+              <button
+                onClick={() => { setShowFamilySwitcher(false); navigate("/profile"); }}
+                className="w-full px-4 py-3 text-left text-xs font-bold flex items-center gap-3 text-primary border-t border-zinc-100 hover:bg-primary/5 transition-colors"
+              >
+                <UserPlus size={14} /> 创建或加入家庭
+              </button>
             </motion.div>
           </div>
         )}
