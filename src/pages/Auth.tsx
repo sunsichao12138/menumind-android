@@ -4,7 +4,7 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { cn } from "../lib/utils";
-import appIcon from "../assets/app-icon.jpg";
+import appIcon from "../assets/app-icon-cropped.jpg";
 
 export default function Auth() {
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -83,9 +83,7 @@ export default function Auth() {
           animate={{ opacity: 1, y: 0 }}
           className="relative text-center space-y-4"
         >
-          <div className="w-20 h-20 rounded-3xl shadow-2xl mb-2 overflow-hidden mx-auto">
-            <img src={appIcon} alt="小灶" className="w-full h-full object-cover scale-[1.35]" />
-          </div>
+          <img src={appIcon} alt="小灶" className="w-20 h-20 rounded-[22px] shadow-2xl mb-2 mx-auto" />
           <h1 className="text-3xl font-black text-zinc-900 tracking-tight">小灶</h1>
           <p className="text-zinc-400 text-sm font-medium">AI 帮你管冰箱、挑菜谱、减浪费</p>
         </motion.div>
