@@ -83,7 +83,9 @@ export default function Auth() {
           animate={{ opacity: 1, y: 0 }}
           className="relative text-center space-y-4"
         >
-          <img src={appIcon} alt="小灶" className="w-20 h-20 rounded-3xl shadow-2xl mb-2" />
+          <div className="w-20 h-20 rounded-3xl shadow-2xl mb-2 overflow-hidden">
+            <img src={appIcon} alt="小灶" className="w-full h-full object-cover scale-[1.2]" />
+          </div>
           <h1 className="text-3xl font-black text-zinc-900 tracking-tight">小灶</h1>
           <p className="text-zinc-400 text-sm font-medium">AI 帮你管冰箱、挑菜谱、减浪费</p>
         </motion.div>
