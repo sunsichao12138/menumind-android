@@ -814,6 +814,108 @@ router.post("/recognize-image", async (req: Request, res: Response) => {
     }
   }
 });
+
+// POST /api/ai/auto-fill - 根据食材名称自动填充分类、存放天数、数量、单位
+router.post("/auto-fill", async (req: Request, res: Response) => {
+  try {
+    const apiKey = process.env.ARK_API_KEY;
+    const modelId = process.env.ARK_MODEL_ID || "doubao-1.5-pro-256k-250115";
+    const arkEndpoint = process.env.ARK_API_ENDPOINT || "https://ark.cn-beijing.volces.com/api/v3/chat/completions";
+
+    if (!apiKey) {
+      res.status(500).json({ error: "ARK_API_KEY not configured" });
+      return;
+    }
+
+    const { name } = req.body;
+    if (!name || !name.trim()) {
+      res.status(400).json({ error: "食材名称不能为空" });
+      return;
+    }
+
+    console.log(`[AI] Auto-filling ingredient info for: ${name}`);
+
+    const today = new Date().toISOString().split("T")[0];
+
+    const prompt = `你是一个厨房食材专家。用户输入了一个食材名称："${name.trim()}"。
+
+请根据这个食材名称，自动推断以下信息：
+
+## 分类（只能从以下选择一个）
+蔬菜、水果、蛋奶肉类、海鲜水产、主食干货、豆制品、调料、饮品、零食、其他
+
+## 单位（只能从以下选择一个，选最常用的）
+克、千克、个、ml、L
+
+## 要求
+1. amount：该食材一个人一次购买的常见数量（纯数字）
+2. unit：最适合这个食材的计量单位
+3. expiryDays：该食材在冰箱中的常见保存天数（纯数字）
+4. purchaseDate：默认今天 ${today}
+5. category：最合适的分类
+
+## 严格输出JSON（不要markdown标记，不要额外文字）
+{
+  "category": "分类",
+  "amount": "数量",
+  "unit": "单位",
+  "expiryDays": "天数",
+  "purchaseDate": "${today}"
+}`;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
+    const response = await fetch(arkEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: modelId,
+        messages: [
+          { role: "system", content: "你是一个厨房食材专家，只输出JSON，不要任何额外文字。" },
+          { role: "user", content: prompt },
+        ],
+        max_tokens: 128,
+        temperature: 0.3,
+      }),
+    });
+
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error("[AI] Auto-fill API error:", errText);
+      res.status(500).json({ error: "AI 服务调用失败" });
+      return;
+    }
+
+    const data = await response.json() as any;
+    let jsonStr = data.choices?.[0]?.message?.content?.trim() || "";
+
+    // 去掉可能的 markdown 包裹
+    if (jsonStr.startsWith("```")) {
+      jsonStr = jsonStr.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
+    }
+
+    const result = JSON.parse(jsonStr);
+    console.log(`[AI] Auto-filled: ${name} → ${result.category}, ${result.amount}${result.unit}, ${result.expiryDays}天`);
+
+    res.json(result);
+  } catch (err: any) {
+    if (err.name === "AbortError") {
+      console.error("[AI] Auto-fill timeout");
+      res.status(504).json({ error: "识别超时，请重试" });
+    } else {
+      console.error("[AI] Auto-fill error:", err.message);
+      res.status(500).json({ error: err.message });
+    }
+  }
+});
+
 // GET /api/ai/home-picks - 首页三菜推荐（纯规则引擎，秒开）
 router.get("/home-picks", async (req: Request, res: Response) => {
   try {

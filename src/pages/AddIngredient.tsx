@@ -129,25 +129,30 @@ export default function AddIngredient({ isOpen, onClose, onAdded }: AddIngredien
       return;
     }
 
-    const fillData = () => {
-      setFormData({
-        name: "新鲜西红柿",
-        category: "蔬菜",
-        amount: "500",
-        unit: "克",
-        purchaseDate: new Date().toISOString().split('T')[0],
-        expiryDays: "5"
-      });
-    };
-
     if (source === "auto") {
-      setProcessingSource(source);
-      setTimeout(() => {
-        fillData();
+      if (!formData.name.trim()) {
+        setRecognizeError("请先输入食材名称");
+        return;
+      }
+      setProcessingSource("auto");
+      setRecognizeError("");
+      try {
+        const result = await api.post<any>("/ai/auto-fill", { name: formData.name.trim() });
+        setFormData(prev => ({
+          ...prev,
+          category: result.category || prev.category,
+          amount: String(result.amount || prev.amount),
+          unit: result.unit || prev.unit,
+          purchaseDate: result.purchaseDate || prev.purchaseDate,
+          expiryDays: String(result.expiryDays || prev.expiryDays),
+        }));
+      } catch (err: any) {
+        console.error("Auto-fill failed:", err);
+        setRecognizeError(err.message || "自动识别失败，请重试");
+      } finally {
         setProcessingSource(null);
-      }, 1500);
-    } else {
-      fillData();
+      }
+      return;
     }
   };
 
@@ -213,7 +218,7 @@ export default function AddIngredient({ isOpen, onClose, onAdded }: AddIngredien
           >
             {/* 识别中遮罩 */}
             <AnimatePresence>
-              {processingSource === "camera" && (
+              {(processingSource === "camera" || processingSource === "auto") && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
