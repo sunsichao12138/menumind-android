@@ -107,17 +107,17 @@ export default function Fridge() {
           <div className="bg-gradient-to-br from-primary to-orange-500 text-white rounded-[28px] shadow-xl shadow-primary/30 relative overflow-hidden py-4 px-5">
             <div className="relative z-10">
               <div className="grid grid-cols-3 gap-3">
-                <div className="flex flex-col items-center justify-center bg-white/20 backdrop-blur-sm py-2.5 rounded-[20px]">
+                <div className="flex flex-col items-center justify-center bg-white/25 backdrop-blur-sm py-2.5 rounded-[20px]">
                   <span className="text-2xl font-bold text-white">{ingredients.length}</span>
-                  <span className="text-[9px] font-bold mt-0.5 text-zinc-300">现有食材</span>
+                  <span className="text-[9px] font-bold mt-0.5 text-white/80">现有食材</span>
                 </div>
-                <div className="flex flex-col items-center justify-center bg-white/20 backdrop-blur-sm py-2.5 rounded-[20px]">
-                  <span className="text-2xl font-bold text-red-400">{expiringCount}</span>
-                  <span className="text-[9px] font-bold mt-0.5 text-zinc-300">快过期</span>
+                <div className="flex flex-col items-center justify-center bg-white/25 backdrop-blur-sm py-2.5 rounded-[20px]">
+                  <span className="text-2xl font-bold text-yellow-200">{expiringCount}</span>
+                  <span className="text-[9px] font-bold mt-0.5 text-white/80">快过期</span>
                 </div>
-                <div className="flex flex-col items-center justify-center bg-white/20 backdrop-blur-sm py-2.5 rounded-[20px]">
-                  <span className={cn("text-2xl font-bold", expiredCount > 0 ? "text-orange-400" : "text-white")}>{expiredCount}</span>
-                  <span className="text-[9px] font-bold mt-0.5 text-zinc-300">已过期</span>
+                <div className="flex flex-col items-center justify-center bg-white/25 backdrop-blur-sm py-2.5 rounded-[20px]">
+                  <span className={cn("text-2xl font-bold", expiredCount > 0 ? "text-red-200" : "text-white")}>{expiredCount}</span>
+                  <span className="text-[9px] font-bold mt-0.5 text-white/80">已过期</span>
                 </div>
               </div>
             </div>
