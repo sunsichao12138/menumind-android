@@ -32,24 +32,56 @@ const SLOT_CONFIG = {
 };
 
 const ALL_TAGS = [
+  { label: "元气早餐", emoji: "🌞", slots: ["morning"] },
   { label: "低碳水", emoji: "🌿" },
   { label: "宝宝餐", emoji: "👶" },
   { label: "本周热点", emoji: "🔥" },
-  { label: "15分钟快手", emoji: "⏱️" },
-  { label: "元气早餐", emoji: "🌞" },
+  { label: "15分钟快手", emoji: "⏱️", slots: ["morning", "lunch"] },
   { label: "拯救冰箱", emoji: "🧊", special: true },
-  { label: "来点甜的", emoji: "🍰" },
-  { label: "喝点东西", emoji: "🥤" },
-  { label: "家常菜", emoji: "🍳" },
-  { label: "西式料理", emoji: "🍝" },
-  { label: "日韩风味", emoji: "🍣" },
-  { label: "火辣过瘾", emoji: "🌶️" },
-  { label: "清爽解腻", emoji: "🥗" },
+  { label: "来点甜的", emoji: "🍰", slots: ["afternoon"] },
+  { label: "喝点东西", emoji: "🥤", slots: ["afternoon"] },
+  { label: "家常菜", emoji: "🍳", slots: ["lunch", "dinner"] },
+  { label: "西式料理", emoji: "🍝", slots: ["lunch", "dinner"] },
+  { label: "日韩风味", emoji: "🍣", slots: ["lunch", "dinner"] },
+  { label: "火辣过瘾", emoji: "🌶️", slots: ["lunch", "dinner", "night"] },
+  { label: "清爽解腻", emoji: "🥗", slots: ["afternoon"] },
   { label: "高蛋白", emoji: "💪" },
-  { label: "深夜食堂", emoji: "🌙" },
-  { label: "减脂餐", emoji: "🥑" },
-  { label: "微醺调酒", emoji: "🍸" },
+  { label: "深夜食堂", emoji: "🌙", slots: ["night"] },
+  { label: "减脂餐", emoji: "🥑", slots: ["morning", "lunch"] },
+  { label: "微醺调酒", emoji: "🍸", slots: ["night"] },
 ];
+
+// 根据时间获取当前时段
+const getTimeSlot = (): string => {
+  const h = new Date().getHours();
+  if (h < 4) return "night";
+  if (h < 11) return "morning";
+  if (h < 14) return "lunch";
+  if (h < 17) return "afternoon";
+  if (h < 21) return "dinner";
+  return "night";
+};
+
+// 生成时段感知的标签列表
+const getTimeTags = () => {
+  const slot = getTimeSlot();
+  const special = ALL_TAGS.find(t => t.special);
+  // 当前时段优先的标签
+  const slotTags = ALL_TAGS.filter(t => !t.special && t.slots?.includes(slot));
+  // 通用标签（没有 slots 限制的）
+  const generalTags = ALL_TAGS.filter(t => !t.special && !t.slots);
+  // 其他时段的标签
+  const otherTags = ALL_TAGS.filter(t => !t.special && t.slots && !t.slots.includes(slot));
+
+  // 先放时段标签（随机排序），再补通用标签，最后补其他时段标签，取5个
+  const pool = [
+    ...slotTags.sort(() => 0.5 - Math.random()),
+    ...generalTags.sort(() => 0.5 - Math.random()),
+    ...otherTags.sort(() => 0.5 - Math.random()),
+  ].slice(0, 5);
+
+  return special ? [...pool, special] : pool;
+};
 
 export default function Home() {
   const navigate = useNavigate();
@@ -103,20 +135,13 @@ export default function Home() {
     return () => document.removeEventListener("visibilitychange", handleVisible);
   }, []);
 
-  const [currentTags, setCurrentTags] = useState(() => {
-    // Always include "拯救冰箱" as the special tag, plus 5 random others
-    const special = ALL_TAGS.find(t => t.special);
-    const others = ALL_TAGS.filter(t => !t.special).sort(() => 0.5 - Math.random()).slice(0, 5);
-    return special ? [...others, special] : others;
-  });
+  const [currentTags, setCurrentTags] = useState(() => getTimeTags());
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const refreshTags = () => {
     setIsRefreshing(true);
     setTimeout(() => {
-      const special = ALL_TAGS.find(t => t.special);
-      const others = ALL_TAGS.filter(t => !t.special).sort(() => 0.5 - Math.random()).slice(0, 5);
-      setCurrentTags(special ? [...others, special] : others);
+      setCurrentTags(getTimeTags());
       setIsRefreshing(false);
     }, 500);
   };
