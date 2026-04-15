@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { supabase } from "../supabase.js";
 import { calculateConsumption } from "../utils/unitConversion.js";
+import { logIngredientAction } from "./ingredient-logs.js";
 
 const router = Router();
 
@@ -88,6 +89,9 @@ router.post("/", async (req: Request, res: Response) => {
       image: data.image,
       suggestions: data.suggestions || [],
     });
+
+    // 记录日志
+    logIngredientAction(req.userId!, "add", data.name, `添加了 ${data.amount} ${data.name}`);
   } catch (err: any) {
     console.error("POST /api/ingredients error:", err.message);
     res.status(500).json({ error: err.message });
@@ -136,9 +140,14 @@ router.patch("/:id", async (req: Request, res: Response) => {
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    // 先查出名称用于日志
+    const { data: item } = await supabase.from("ingredients").select("name").eq("id", id).eq("user_id", req.userId!).single();
     const { error } = await supabase.from("ingredients").delete().eq("id", id).eq("user_id", req.userId!);
     if (error) throw error;
     res.json({ success: true });
+
+    // 记录日志
+    if (item) logIngredientAction(req.userId!, "delete", item.name, `删除了 ${item.name}`);
   } catch (err: any) {
     console.error("DELETE /api/ingredients error:", err.message);
     res.status(500).json({ error: err.message });

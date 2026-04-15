@@ -14,6 +14,7 @@ import { PlanProvider } from "./context/PlanContext";
 import { FavoritesProvider } from "./context/FavoritesContext";
 import { HistoryProvider } from "./context/HistoryContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { FamilyProvider } from "./context/FamilyContext";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -39,13 +40,15 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 // Data providers wrapped in auth check - only fetch data when logged in
 function AuthenticatedProviders({ children }: { children: React.ReactNode }) {
   return (
-    <HistoryProvider>
-      <FavoritesProvider>
-        <PlanProvider>
-          {children}
-        </PlanProvider>
-      </FavoritesProvider>
-    </HistoryProvider>
+    <FamilyProvider>
+      <HistoryProvider>
+        <FavoritesProvider>
+          <PlanProvider>
+            {children}
+          </PlanProvider>
+        </FavoritesProvider>
+      </HistoryProvider>
+    </FamilyProvider>
   );
 }
 

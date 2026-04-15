@@ -22,6 +22,7 @@ import { useHistory } from "../context/HistoryContext";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { useFamily } from "../context/FamilyContext";
 
 interface UserProfile {
   userId: string;
@@ -47,6 +48,14 @@ export default function Profile() {
   const { history, clearHistory } = useHistory();
   const navigate = useNavigate();
   const avatarInputRef = React.useRef<HTMLInputElement>(null);
+  const { families, createFamily, joinFamily, leaveFamily, getFamilyDetail, refreshFamilies } = useFamily();
+  const [showFamily, setShowFamily] = useState(false);
+  const [familyDetail, setFamilyDetail] = useState<any>(null);
+  const [familyTab, setFamilyTab] = useState<"info" | "create" | "join">("info");
+  const [newFamilyName, setNewFamilyName] = useState("");
+  const [joinFamilyId, setJoinFamilyId] = useState("");
+  const [familyLoading, setFamilyLoading] = useState(false);
+  const [familyError, setFamilyError] = useState("");
 
   // 从 API 加载用户配置
   useEffect(() => {
@@ -218,6 +227,17 @@ export default function Profile() {
               key={item.id}
               onClick={() => {
                 if (item.id === 'prefs') setShowPreferences(true);
+                if (item.id === 'family') {
+                  setShowFamily(true);
+                  setFamilyError("");
+                  if (families.length > 0) {
+                    setFamilyTab("info");
+                    getFamilyDetail(families[0].id).then(setFamilyDetail).catch(console.error);
+                  } else {
+                    setFamilyTab("create");
+                    setFamilyDetail(null);
+                  }
+                }
               }}
               className={cn(
                 "w-full flex items-center justify-between p-4 hover:bg-zinc-50 transition-colors group",
@@ -523,6 +543,201 @@ export default function Profile() {
                   保存
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 我的家庭 Modal */}
+      <AnimatePresence>
+        {showFamily && (
+          <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowFamily(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              className="relative bg-white w-full max-w-md rounded-t-[3rem] sm:rounded-[3rem] p-8 shadow-2xl space-y-6 overflow-hidden max-h-[85vh] overflow-y-auto"
+            >
+              <button
+                onClick={() => setShowFamily(false)}
+                className="absolute top-6 right-6 p-2 hover:bg-zinc-100 rounded-full transition-colors z-10"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="text-center space-y-2">
+                <h2 className="text-2xl font-black text-zinc-900">我的家庭</h2>
+                <p className="text-zinc-400 text-sm">管理您的家庭，共享冰箱和计划</p>
+              </div>
+
+              {familyError && (
+                <div className="bg-red-50 text-red-600 text-sm font-bold px-4 py-3 rounded-2xl text-center">{familyError}</div>
+              )}
+
+              {/* 已有家庭 - 显示详情 */}
+              {families.length > 0 && familyTab === "info" && familyDetail && (
+                <div className="space-y-5">
+                  <div className="bg-zinc-50 rounded-2xl p-5 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-lg">{familyDetail.name}</h3>
+                      <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                        {familyDetail.ownerId === user?.id ? "创建者" : "成员"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-zinc-500 font-medium">家庭ID：</span>
+                      <code className="text-xs bg-white px-2 py-1 rounded-lg border border-zinc-100 font-mono flex-1 truncate">{familyDetail.id}</code>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(familyDetail.id);
+                          setFamilyError("已复制家庭ID");
+                          setTimeout(() => setFamilyError(""), 2000);
+                        }}
+                        className="text-xs text-primary font-bold px-2 py-1 rounded-lg hover:bg-primary/5 transition-colors"
+                      >
+                        复制
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3">家庭成员 ({familyDetail.members?.length || 0})</h4>
+                    <div className="space-y-2">
+                      {(familyDetail.members || []).map((m: any) => (
+                        <div key={m.userId} className="flex items-center gap-3 p-3 bg-zinc-50 rounded-xl">
+                          <img
+                            src={m.avatarUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${m.userId}&backgroundColor=b6e3f4`}
+                            alt={m.displayName}
+                            className="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover"
+                          />
+                          <div className="flex-1">
+                            <span className="font-bold text-sm text-zinc-800">{m.displayName}</span>
+                            {m.role === "owner" && (
+                              <span className="ml-2 text-[9px] bg-primary text-white px-1.5 py-0.5 rounded font-black">创建者</span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={async () => {
+                      setFamilyLoading(true);
+                      try {
+                        await leaveFamily(familyDetail.id);
+                        setFamilyDetail(null);
+                        setFamilyTab("create");
+                        await refreshFamilies();
+                      } catch (err: any) {
+                        setFamilyError(err.message || "操作失败");
+                      } finally {
+                        setFamilyLoading(false);
+                      }
+                    }}
+                    disabled={familyLoading}
+                    className="w-full py-3 rounded-full border border-red-200 text-red-500 font-bold text-sm hover:bg-red-50 active:scale-95 transition-all"
+                  >
+                    {familyDetail.ownerId === user?.id ? "解散家庭" : "退出家庭"}
+                  </button>
+                </div>
+              )}
+
+              {/* 未加入家庭 - 创建或加入 */}
+              {(families.length === 0 || familyTab !== "info") && familyTab !== "info" && (
+                <div className="space-y-5">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setFamilyTab("create")}
+                      className={cn("flex-1 py-2.5 rounded-full text-sm font-bold transition-all", familyTab === "create" ? "bg-primary text-white shadow-md" : "bg-zinc-100 text-zinc-500")}
+                    >
+                      创建家庭
+                    </button>
+                    <button
+                      onClick={() => setFamilyTab("join")}
+                      className={cn("flex-1 py-2.5 rounded-full text-sm font-bold transition-all", familyTab === "join" ? "bg-primary text-white shadow-md" : "bg-zinc-100 text-zinc-500")}
+                    >
+                      加入家庭
+                    </button>
+                  </div>
+
+                  {familyTab === "create" && (
+                    <div className="space-y-4">
+                      <input
+                        type="text"
+                        value={newFamilyName}
+                        onChange={e => setNewFamilyName(e.target.value)}
+                        placeholder="输入家庭名称，如：温馨小家"
+                        maxLength={20}
+                        className="w-full bg-zinc-50 border border-zinc-100 px-5 py-4 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      />
+                      <button
+                        onClick={async () => {
+                          if (!newFamilyName.trim()) return;
+                          setFamilyLoading(true);
+                          setFamilyError("");
+                          try {
+                            const f = await createFamily(newFamilyName.trim());
+                            const detail = await getFamilyDetail(f.id);
+                            setFamilyDetail(detail);
+                            setFamilyTab("info");
+                            setNewFamilyName("");
+                          } catch (err: any) {
+                            setFamilyError(err.message || "创建失败");
+                          } finally {
+                            setFamilyLoading(false);
+                          }
+                        }}
+                        disabled={familyLoading || !newFamilyName.trim()}
+                        className="w-full py-4 rounded-full bg-primary text-white font-bold text-sm shadow-xl shadow-primary/30 active:scale-95 transition-all disabled:opacity-40"
+                      >
+                        {familyLoading ? "创建中..." : "创建家庭"}
+                      </button>
+                    </div>
+                  )}
+
+                  {familyTab === "join" && (
+                    <div className="space-y-4">
+                      <input
+                        type="text"
+                        value={joinFamilyId}
+                        onChange={e => setJoinFamilyId(e.target.value)}
+                        placeholder="输入家庭ID"
+                        className="w-full bg-zinc-50 border border-zinc-100 px-5 py-4 rounded-2xl text-sm font-bold font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      />
+                      <button
+                        onClick={async () => {
+                          if (!joinFamilyId.trim()) return;
+                          setFamilyLoading(true);
+                          setFamilyError("");
+                          try {
+                            await joinFamily(joinFamilyId.trim());
+                            const detail = await getFamilyDetail(joinFamilyId.trim());
+                            setFamilyDetail(detail);
+                            setFamilyTab("info");
+                            setJoinFamilyId("");
+                          } catch (err: any) {
+                            setFamilyError(err.message || "加入失败，请检查ID");
+                          } finally {
+                            setFamilyLoading(false);
+                          }
+                        }}
+                        disabled={familyLoading || !joinFamilyId.trim()}
+                        className="w-full py-4 rounded-full bg-primary text-white font-bold text-sm shadow-xl shadow-primary/30 active:scale-95 transition-all disabled:opacity-40"
+                      >
+                        {familyLoading ? "加入中..." : "加入家庭"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </motion.div>
           </div>
         )}

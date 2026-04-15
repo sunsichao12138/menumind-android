@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, ArrowRight, Sparkles, Clock, Plus, Check, Trash2, X, ChefHat, ShoppingBasket, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Calendar, Sparkles, Clock, Check, Trash2, X, ChefHat, ShoppingBasket, Loader2, ChevronDown, ChevronUp, Users, User } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { usePlan } from "../context/PlanContext";
 import { cn } from "../lib/utils";
-import { Recipe } from "../types";
 import { api } from "../api/client";
+import { useFamily } from "../context/FamilyContext";
 
 export default function Plan() {
   const navigate = useNavigate();
@@ -13,15 +13,9 @@ export default function Plan() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showConsumeModal, setShowConsumeModal] = useState(false);
   const [consumeList, setConsumeList] = useState<Array<{name: string, requiredStr: string, amount: number, unit: string, stock: string}>>([]);
-  const [suggestedRecipes, setSuggestedRecipes] = useState<Recipe[]>([]);
   const [loadingConsume, setLoadingConsume] = useState(false);
-
-  // 从 API 加载推荐菜谱
-  useEffect(() => {
-    api.get<Recipe[]>("/recipes")
-      .then(setSuggestedRecipes)
-      .catch((err) => console.error("Failed to load recipes:", err));
-  }, []);
+  const [showFamilySwitcher, setShowFamilySwitcher] = useState(false);
+  const { families, currentFamily, mode, switchMode } = useFamily();
 
   const toggleSelect = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -154,8 +148,16 @@ export default function Plan() {
 
   return (
     <div className="px-6 py-12 space-y-8 animate-in fade-in duration-500 pb-32">
-      <section>
+      <section className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-on-surface tracking-tight">今日计划</h1>
+        <button
+          onClick={() => setShowFamilySwitcher(!showFamilySwitcher)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-zinc-100 shadow-sm text-xs font-bold text-zinc-600 active:scale-95 transition-all"
+        >
+          {mode === "family" ? <Users size={14} className="text-primary" /> : <User size={14} />}
+          <span>{mode === "family" && currentFamily ? currentFamily.name : "个人"}</span>
+          <ChevronDown size={12} className="text-zinc-400" />
+        </button>
       </section>
 
       {plannedRecipes.length > 0 && (
@@ -263,51 +265,7 @@ export default function Plan() {
         </section>
       )}
 
-      <section className="pt-4">
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="font-bold text-lg">猜你喜欢</h4>
-          <button 
-            onClick={() => navigate("/")}
-            className="text-zinc-400 text-xs font-bold flex items-center gap-1"
-          >
-            查看更多 <ArrowRight size={14} />
-          </button>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          {suggestedRecipes.slice(0, 6).map((recipe) => (
-            <div 
-              key={recipe.id}
-              onClick={() => navigate(`/recipe/${recipe.id}`)}
-              className="bg-white rounded-3xl p-3 border border-zinc-100 shadow-sm cursor-pointer group"
-            >
-              <div className="aspect-square rounded-2xl overflow-hidden mb-3">
-                <img src={recipe.image} alt={recipe.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-              </div>
-              <div className="flex items-center justify-between gap-2">
-                <div className="min-w-0 flex-grow">
-                  <h5 className="font-bold text-sm truncate">{recipe.name}</h5>
-                  <span className="text-[10px] text-zinc-400">{recipe.time}</span>
-                </div>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (isInPlan(recipe.id)) {
-                      removeFromPlan(recipe.id);
-                    } else {
-                      addToPlan(recipe);
-                    }
-                  }}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-all active:scale-90 flex-shrink-0 ${
-                    isInPlan(recipe.id) ? "bg-surface-container-low text-on-surface-variant" : "bg-primary text-white shadow-md shadow-primary/30"
-                  }`}
-                >
-                  {isInPlan(recipe.id) ? <Check size={16} /> : <Plus size={16} />}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+
 
       {/* 固定底部按钮 - 始终显示 */}
       {plannedRecipes.length > 0 && (
@@ -462,6 +420,43 @@ export default function Plan() {
                   {consuming ? "正在处理..." : "确认消耗并继续"}
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 家庭切换下拉 */}
+      <AnimatePresence>
+        {showFamilySwitcher && (
+          <div className="fixed inset-0 z-50" onClick={() => setShowFamilySwitcher(false)}>
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="absolute top-20 right-6 bg-white rounded-2xl shadow-xl border border-zinc-100 overflow-hidden w-48"
+              onClick={e => e.stopPropagation()}
+            >
+              <button
+                onClick={() => { switchMode("personal"); setShowFamilySwitcher(false); }}
+                className={cn("w-full px-4 py-3 text-left text-sm font-bold flex items-center gap-3 transition-colors", mode === "personal" ? "bg-primary/5 text-primary" : "text-zinc-700 hover:bg-zinc-50")}
+              >
+                <User size={16} /> 个人模式
+              </button>
+              {families.length > 0 ? (
+                families.map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => { switchMode("family", f.id); setShowFamilySwitcher(false); }}
+                    className={cn("w-full px-4 py-3 text-left text-sm font-bold flex items-center gap-3 transition-colors border-t border-zinc-50", currentFamily?.id === f.id && mode === "family" ? "bg-primary/5 text-primary" : "text-zinc-700 hover:bg-zinc-50")}
+                  >
+                    <Users size={16} /> {f.name}
+                  </button>
+                ))
+              ) : (
+                <div className="px-4 py-3 text-xs text-zinc-400 border-t border-zinc-50">
+                  暂未加入家庭，请在「我的」页面创建或加入
+                </div>
+              )}
             </motion.div>
           </div>
         )}

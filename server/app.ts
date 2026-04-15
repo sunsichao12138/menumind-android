@@ -13,6 +13,8 @@ import plansRouter from "./routes/plans.js";
 import historyRouter from "./routes/history.js";
 import profileRouter from "./routes/profile.js";
 import aiRouter from "./routes/ai.js";
+import familiesRouter from "./routes/families.js";
+import ingredientLogsRouter from "./routes/ingredient-logs.js";
 dotenv.config();
 
 const app = express();
@@ -38,6 +40,8 @@ app.use("/api/plans", authMiddleware, plansRouter);
 app.use("/api/history", authMiddleware, historyRouter);
 app.use("/api/profile", authMiddleware, profileRouter);
 app.use("/api/ai", authMiddleware, aiRouter);
+app.use("/api/families", authMiddleware, familiesRouter);
+app.use("/api/ingredient-logs", authMiddleware, ingredientLogsRouter);
 
 // Health check
 app.get("/api/health", (_req, res) => {

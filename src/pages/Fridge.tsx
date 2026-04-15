@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Minus, Search, Trash2 } from "lucide-react";
+import { Plus, Minus, Search, Trash2, ClipboardList, Users, ChevronDown, User } from "lucide-react";
 import { cn } from "../lib/utils";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import AddIngredient from "./AddIngredient";
 import { Ingredient } from "../types";
 import { api } from "../api/client";
+import { useFamily } from "../context/FamilyContext";
 
 export default function Fridge() {
   const navigate = useNavigate();
@@ -14,6 +15,10 @@ export default function Fridge() {
   const [activeCategory, setActiveCategory] = useState("全部");
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [showLogs, setShowLogs] = useState(false);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [showFamilySwitcher, setShowFamilySwitcher] = useState(false);
+  const { families, currentFamily, mode, switchMode } = useFamily();
 
   // 从 API 加载食材
   useEffect(() => {
@@ -96,10 +101,52 @@ export default function Fridge() {
   const expiringCount = ingredients.filter(i => i.expiryDays <= 3 && i.expiryDays > 0).length;
   const expiredCount = ingredients.filter(i => i.expiryDays <= 0).length;
 
+  // 加载日志
+  const loadLogs = async () => {
+    try {
+      const data = await api.get<any[]>("/ingredient-logs" + (mode === "family" && currentFamily ? `?family_id=${currentFamily.id}` : ""));
+      setLogs(data);
+    } catch (err) {
+      console.error("Failed to load logs:", err);
+    }
+  };
+
+  const formatLogTime = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return "刚刚";
+    if (diffMin < 60) return `${diffMin}分钟前`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}小时前`;
+    const diffDay = Math.floor(diffHr / 24);
+    if (diffDay < 7) return `${diffDay}天前`;
+    return d.toLocaleDateString("zh-CN", { month: "short", day: "numeric" });
+  };
+
+  const actionIcon = (action: string) => {
+    switch (action) {
+      case "add": return "➕";
+      case "consume": return "🍳";
+      case "delete": return "🗑️";
+      case "expire_warning": return "⚠️";
+      default: return "📝";
+    }
+  };
+
   return (
-    <div className="px-6 py-12 space-y-5 animate-in fade-in duration-500">
-      <section>
+    <div className="px-6 py-12 space-y-5 animate-in fade-in duration-500 pb-28">
+      <section className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-on-surface">冰箱管理</h1>
+        <button
+          onClick={() => setShowFamilySwitcher(!showFamilySwitcher)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-zinc-100 shadow-sm text-xs font-bold text-zinc-600 active:scale-95 transition-all"
+        >
+          {mode === "family" ? <Users size={14} className="text-primary" /> : <User size={14} />}
+          <span>{mode === "family" && currentFamily ? currentFamily.name : "个人"}</span>
+          <ChevronDown size={12} className="text-zinc-400" />
+        </button>
       </section>
 
       <main className="space-y-4">
@@ -238,6 +285,100 @@ export default function Fridge() {
         onClose={() => setIsAddModalOpen(false)}
         onAdded={handleIngredientAdded}
       />
+
+      {/* 浮动食材记录按钮 */}
+      <button
+        onClick={() => { setShowLogs(true); loadLogs(); }}
+        className="fixed bottom-28 right-6 z-30 w-12 h-12 bg-primary text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center active:scale-90 transition-all"
+      >
+        <ClipboardList size={20} />
+      </button>
+
+      {/* 家庭切换下拉 */}
+      <AnimatePresence>
+        {showFamilySwitcher && (
+          <div className="fixed inset-0 z-50" onClick={() => setShowFamilySwitcher(false)}>
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="absolute top-20 right-6 bg-white rounded-2xl shadow-xl border border-zinc-100 overflow-hidden w-48"
+              onClick={e => e.stopPropagation()}
+            >
+              <button
+                onClick={() => { switchMode("personal"); setShowFamilySwitcher(false); }}
+                className={cn("w-full px-4 py-3 text-left text-sm font-bold flex items-center gap-3 transition-colors", mode === "personal" ? "bg-primary/5 text-primary" : "text-zinc-700 hover:bg-zinc-50")}
+              >
+                <User size={16} /> 个人模式
+              </button>
+              {families.length > 0 ? (
+                families.map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => { switchMode("family", f.id); setShowFamilySwitcher(false); }}
+                    className={cn("w-full px-4 py-3 text-left text-sm font-bold flex items-center gap-3 transition-colors border-t border-zinc-50", currentFamily?.id === f.id && mode === "family" ? "bg-primary/5 text-primary" : "text-zinc-700 hover:bg-zinc-50")}
+                  >
+                    <Users size={16} /> {f.name}
+                  </button>
+                ))
+              ) : (
+                <div className="px-4 py-3 text-xs text-zinc-400 border-t border-zinc-50">
+                  暂未加入家庭，请在「我的」页面创建或加入
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 食材记录 Bottom Sheet */}
+      <AnimatePresence>
+        {showLogs && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowLogs(false)}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative w-full bg-white rounded-t-3xl shadow-2xl max-h-[70vh] flex flex-col pb-8"
+            >
+              <div className="w-12 h-1.5 bg-zinc-200 rounded-full mx-auto mt-4 mb-4" />
+              <h3 className="text-lg font-bold text-center mb-4">食材记录</h3>
+              <div className="flex-1 overflow-y-auto px-6 space-y-3">
+                {logs.length === 0 ? (
+                  <div className="text-center py-12 text-zinc-300">
+                    <ClipboardList size={40} className="mx-auto mb-3 opacity-30" />
+                    <p className="font-bold text-sm">暂无记录</p>
+                  </div>
+                ) : (
+                  logs.map((log: any) => (
+                    <div key={log.id} className="flex items-start gap-3 py-2">
+                      <span className="text-lg mt-0.5">{actionIcon(log.action)}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-zinc-800">
+                          <span className="text-primary">{log.userName}</span>
+                          {" "}{log.detail}
+                        </p>
+                        {log.action === "expire_warning" && (
+                          <p className="text-xs text-amber-500 font-medium mt-0.5">即将过期提醒</p>
+                        )}
+                        <p className="text-[10px] text-zinc-400 mt-0.5">{formatLogTime(log.createdAt)}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
