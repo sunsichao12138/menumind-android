@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Sparkles, Clock, Check, Trash2, X, ChefHat, ShoppingBasket, Loader2, ChevronDown, ChevronUp, Users, User, UserPlus } from "lucide-react";
+import { Calendar, ArrowRight, Sparkles, Clock, Check, Trash2, X, ChefHat, ShoppingBasket, Loader2, ChevronDown, ChevronUp, Users, User, UserPlus } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { usePlan } from "../context/PlanContext";
 import { cn } from "../lib/utils";
