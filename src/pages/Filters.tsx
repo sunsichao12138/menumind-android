@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, Sparkles, Package, Clock, Utensils, Plus, ChevronDown, ChevronUp, Heart, X, Check, ChevronsDown } from "lucide-react";
+import { ArrowRight, Sparkles, Package, Clock, Plus, Heart, Check, ChevronsDown, SlidersHorizontal } from "lucide-react";
 import { cn } from "../lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { useFavorites } from "../context/FavoritesContext";
@@ -25,10 +25,10 @@ export default function Filters() {
     return null;
   })();
 
-  const [showFilters, setShowFilters] = useState(!isQuick && !cachedResults);
+  const [showDetailedFilters, setShowDetailedFilters] = useState(false);
   const [peopleCount, setPeopleCount] = useState(cachedResults?.filters?.peopleCount || "2人");
   const [prepTime, setPrepTime] = useState(cachedResults?.filters?.prepTime || "30分钟内");
-  const [mealType, setMealType] = useState(initialTag === "轻食" ? "轻食" : cachedResults?.filters?.mealType || "正餐");
+  const [mealType, setMealType] = useState(initialTag || cachedResults?.filters?.mealType || "正餐");
   const [tastePreference, setTastePreference] = useState(cachedResults?.filters?.tastePreference || "咸香");
   const [useInventory, setUseInventory] = useState(cachedResults?.filters?.useInventory ?? true);
   const [showResults, setShowResults] = useState(!!cachedResults);
@@ -52,7 +52,6 @@ export default function Filters() {
         setIsAiSource(true);
         setIsLoading(false);
         setShowResults(true);
-        // 缓存结果
         localStorage.setItem("ai_recommend_cache", JSON.stringify({
           recipes: data, isAiSource: true, filters: body,
         }));
@@ -60,7 +59,6 @@ export default function Filters() {
       .catch((err) => {
         console.error("AI recommend failed:", err);
         setIsAiSource(false);
-        // 降级：加载数据库已有菜谱
         api.get<Recipe[]>("/recipes")
           .then((data) => {
             setRecipes(data);
@@ -75,14 +73,10 @@ export default function Filters() {
   };
 
   useEffect(() => {
-    // 如果有缓存结果，直接显示，不重新请求
     if (cachedResults) return;
-
     if (isQuick) {
-      setShowFilters(false);
       setShowResults(false);
       setIsLoading(true);
-      
       loadAiRecipes({
         peopleCount,
         prepTime,
@@ -94,109 +88,170 @@ export default function Filters() {
   }, [isQuick]);
 
   const handleGenerate = () => {
-    // 清除缓存，强制重新生成
     localStorage.removeItem("ai_recommend_cache");
-    setShowFilters(false);
     setShowResults(false);
     setIsLoading(true);
     setShowAll(false);
-    
     loadAiRecipes();
   };
 
   const [showAll, setShowAll] = useState(false);
   const displayRecipes = showAll ? recipes.slice(0, 10) : recipes.slice(0, 5);
 
+  // 快速筛选选项
+  const mealTypes = [
+    { label: "正餐", emoji: "🍳" },
+    { label: "轻食", emoji: "🥗" },
+    { label: "早餐", emoji: "🥞" },
+    { label: "下午茶", emoji: "🍰" },
+    { label: "饮品", emoji: "🧋" },
+    { label: "微醺", emoji: "🍷" },
+    { label: "深夜食堂", emoji: "🌙" },
+    { label: "宝宝餐", emoji: "👶" },
+  ];
+
+  // 根据快速筛选类型，决定详细筛选中的口味选项
+  const getTasteOptions = () => {
+    if (["饮品", "微醺"].includes(mealType)) return ["冰爽", "常温", "热饮", "甜口", "微酸"];
+    if (mealType === "下午茶") return ["甜口", "咸口", "清淡", "奶香"];
+    if (mealType === "宝宝餐") return ["清淡", "甜口", "软糯"];
+    return ["清淡", "甜口", "咸香", "香辣"];
+  };
+
+  const showPeopleFilter = ["正餐", "轻食", "早餐", "深夜食堂", "宝宝餐"].includes(mealType);
+  const showTimeFilter = ["正餐", "早餐", "深夜食堂"].includes(mealType);
+  const tasteLabel = ["饮品", "微醺"].includes(mealType) ? "口感偏好" : "口味偏好";
+
   return (
     <div className="min-h-screen bg-surface max-w-md mx-auto relative shadow-2xl animate-in slide-in-from-bottom duration-500">
       <div className="pt-8 px-6 pb-12">
+
+        {/* ═══ 头部 ═══ */}
         <section className="mb-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold">筛选条件</h3>
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => navigate("/")}
-                className="flex items-center gap-1 text-zinc-500 hover:text-zinc-900 transition-colors p-2"
-              >
-                <span className="text-sm font-medium">返回首页</span>
-                <ArrowRight size={20} />
-              </button>
+            <h3 className="text-xl font-bold">智能推荐</h3>
+            <button 
+              onClick={() => navigate("/")}
+              className="flex items-center gap-1 text-zinc-500 hover:text-zinc-900 transition-colors p-2"
+            >
+              <span className="text-sm font-medium">返回首页</span>
+              <ArrowRight size={20} />
+            </button>
+          </div>
+
+          {/* ═══ 快速筛选 - 始终显示 ═══ */}
+          <div className="space-y-3 mb-5">
+            <label className="font-bold tracking-widest text-zinc-400 uppercase text-[10px] block">想吃什么</label>
+            <div className="flex flex-wrap gap-2">
+              {mealTypes.map(({ label, emoji }) => (
+                <button
+                  key={label}
+                  onClick={() => setMealType(mealType === label ? "" : label)}
+                  className={cn(
+                    "px-4 py-2 rounded-full text-sm font-medium transition-all border",
+                    mealType === label
+                      ? "bg-primary text-white border-primary shadow-md shadow-primary/20"
+                      : "bg-white text-zinc-700 border-zinc-200 shadow-sm"
+                  )}
+                >
+                  {emoji} {label}
+                </button>
+              ))}
             </div>
           </div>
 
+          {/* 生成按钮 + 详细筛选入口 */}
+          <div className="flex items-center gap-3 mb-2">
+            <button 
+              onClick={handleGenerate}
+              disabled={isLoading || !mealType}
+              className={cn(
+                "flex-1 rounded-full bg-primary text-white font-bold text-base flex items-center justify-center gap-2 py-3.5 shadow-xl shadow-primary/30 active:scale-[0.98] transition-all hover:bg-orange-600",
+                (isLoading || !mealType) && "opacity-50 cursor-not-allowed scale-95"
+              )}
+            >
+              <Sparkles size={20} className={cn(isLoading && "animate-spin")} />
+              {isLoading ? "生成中..." : "生成菜单"}
+            </button>
+            <button
+              onClick={() => setShowDetailedFilters(!showDetailedFilters)}
+              className={cn(
+                "flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all active:scale-90",
+                showDetailedFilters
+                  ? "bg-primary/10 border-primary text-primary"
+                  : "bg-white border-zinc-200 text-zinc-400"
+              )}
+              title="详细筛选"
+            >
+              <SlidersHorizontal size={20} />
+            </button>
+          </div>
+
+          {/* ═══ 详细筛选 - 下拉展示 ═══ */}
           <AnimatePresence>
-            {showFilters && (
+            {showDetailedFilters && (
               <motion.div 
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25 }}
                 className="overflow-hidden"
               >
-                <div className="mt-4 space-y-6 pb-2">
-                  <div className="space-y-4">
-                    <label className="font-bold tracking-widest text-zinc-400 uppercase text-xs block">几个人吃</label>
-                    <div className="flex gap-2 overflow-x-auto no-scrollbar">
-                      {["1人", "2人", "3人+"].map((opt) => (
-                        <button
-                          key={opt}
-                          onClick={() => setPeopleCount(peopleCount === opt ? "" : opt)}
-                          className={cn(
-                            "px-6 py-2.5 rounded-full text-sm font-medium transition-all border",
-                            peopleCount === opt ? "bg-primary text-white border-primary shadow-md shadow-primary/20" : "bg-white text-zinc-900 border-outline-variant shadow-sm"
-                          )}
-                        >
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                <div className="mt-3 space-y-5 pt-4 pb-2 border-t border-zinc-100">
 
-                  <div className="space-y-4">
-                    <label className="font-bold tracking-widest text-zinc-400 uppercase text-xs block">多久能做好</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {["10分钟内", "20分钟内", "30分钟内"].map((opt) => (
-                        <button
-                          key={opt}
-                          onClick={() => setPrepTime(prepTime === opt ? "" : opt)}
-                          className={cn(
-                            "px-2 py-2.5 rounded-full text-xs font-medium transition-all border",
-                            prepTime === opt ? "bg-primary text-white border-primary shadow-md shadow-primary/20" : "bg-white text-zinc-900 border-outline-variant shadow-sm"
-                          )}
-                        >
-                          {opt}
-                        </button>
-                      ))}
+                  {/* 人数 */}
+                  {showPeopleFilter && (
+                    <div className="space-y-3">
+                      <label className="font-bold tracking-widest text-zinc-400 uppercase text-[10px] block">几个人吃</label>
+                      <div className="flex gap-2">
+                        {["1人", "2人", "3人+"].map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => setPeopleCount(peopleCount === opt ? "" : opt)}
+                            className={cn(
+                              "px-5 py-2 rounded-full text-sm font-medium transition-all border",
+                              peopleCount === opt ? "bg-primary text-white border-primary shadow-md shadow-primary/20" : "bg-white text-zinc-900 border-zinc-200 shadow-sm"
+                            )}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
-                  <div className="space-y-4">
-                    <label className="font-bold tracking-widest text-zinc-400 uppercase text-xs block">现在更想吃</label>
-                    <div className="grid grid-cols-5 gap-2">
-                      {["下午茶", "轻食", "正餐", "饮品", "微醺"].map((opt) => (
-                        <button
-                          key={opt}
-                          onClick={() => setMealType(mealType === opt ? "" : opt)}
-                          className={cn(
-                            "px-2 py-2 rounded-xl text-xs font-medium transition-all border",
-                            mealType === opt ? "bg-primary text-white border-primary shadow-md shadow-primary/20" : "bg-white text-zinc-900 border-outline-variant shadow-sm"
-                          )}
-                        >
-                          {opt}
-                        </button>
-                      ))}
+                  {/* 烹饪时间 */}
+                  {showTimeFilter && (
+                    <div className="space-y-3">
+                      <label className="font-bold tracking-widest text-zinc-400 uppercase text-[10px] block">多久能做好</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {["10分钟内", "20分钟内", "30分钟内"].map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => setPrepTime(prepTime === opt ? "" : opt)}
+                            className={cn(
+                              "px-2 py-2 rounded-full text-xs font-medium transition-all border",
+                              prepTime === opt ? "bg-primary text-white border-primary shadow-md shadow-primary/20" : "bg-white text-zinc-900 border-zinc-200 shadow-sm"
+                            )}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
-                  <div className="space-y-4">
-                    <label className="font-bold tracking-widest text-zinc-400 uppercase text-xs block">口味偏好</label>
+                  {/* 口味偏好 */}
+                  <div className="space-y-3">
+                    <label className="font-bold tracking-widest text-zinc-400 uppercase text-[10px] block">{tasteLabel}</label>
                     <div className="flex flex-wrap gap-2">
-                      {["清淡", "甜口", "咸香", "香辣"].map((opt) => (
+                      {getTasteOptions().map((opt) => (
                         <span
                           key={opt}
                           onClick={() => setTastePreference(tastePreference === opt ? "" : opt)}
                           className={cn(
-                            "px-5 py-2 rounded-lg text-sm cursor-pointer transition-all border",
-                            tastePreference === opt ? "bg-primary text-white border-primary shadow-md shadow-primary/20" : "bg-white text-zinc-500 border-outline-variant shadow-sm"
+                            "px-4 py-2 rounded-full text-sm cursor-pointer transition-all border",
+                            tastePreference === opt ? "bg-primary text-white border-primary shadow-md shadow-primary/20" : "bg-white text-zinc-500 border-zinc-200 shadow-sm"
                           )}
                         >
                           {opt}
@@ -205,14 +260,15 @@ export default function Filters() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-6 rounded-2xl bg-white shadow-md border border-zinc-50">
+                  {/* 优先使用库存 */}
+                  <div className="flex items-center justify-between p-5 rounded-2xl bg-white shadow-sm border border-zinc-100">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-zinc-50 flex items-center justify-center">
-                        <Sparkles size={20} className="text-primary" />
+                      <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Package size={18} className="text-primary" />
                       </div>
                       <div>
                         <p className="font-bold text-sm">优先使用库存</p>
-                        <p className="text-[10px] text-zinc-400">减少食物浪费，优化食材利用率</p>
+                        <p className="text-[10px] text-zinc-400">减少浪费，优化食材利用率</p>
                       </div>
                     </div>
                     <div className="flex bg-zinc-50 p-1 rounded-full border border-zinc-100">
@@ -236,35 +292,13 @@ export default function Filters() {
                       </button>
                     </div>
                   </div>
-
-                  <button 
-                    onClick={handleGenerate}
-                    disabled={isLoading}
-                    className={cn(
-                      "w-full rounded-full bg-primary text-white font-bold text-xl flex items-center justify-center gap-3 py-4 shadow-xl shadow-primary/30 active:scale-[0.98] transition-all hover:bg-orange-600",
-                      isLoading && "opacity-50 cursor-not-allowed scale-95"
-                    )}
-                  >
-                    <Sparkles size={24} className={cn(isLoading && "animate-spin")} />
-                    {isLoading ? "菜单生成中..." : "生成菜单"}
-                  </button>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
-
-          {showResults && (
-            <div className="flex justify-center my-4">
-              <button 
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-900 transition-colors py-2 px-6 text-sm font-medium border border-zinc-200 rounded-full bg-zinc-50 shadow-sm active:scale-95 transition-all"
-              >
-                筛选条件 {showFilters ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              </button>
-            </div>
-          )}
         </section>
 
+        {/* ═══ 加载 & 结果 ═══ */}
         <AnimatePresence mode="wait">
           {isLoading ? (
             <motion.div 
