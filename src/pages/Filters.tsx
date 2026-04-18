@@ -103,19 +103,21 @@ export default function Filters() {
     { label: "轻食", emoji: "🥗" },
     { label: "早餐", emoji: "🥞" },
     { label: "下午茶", emoji: "🍰" },
+    { label: "汤类", emoji: "🍜" },
     { label: "饮品", emoji: "🧋" },
   ];
 
   const getTasteOptions = () => {
+    if (mealType === "饮品" && drinkAlcohol === "含酒精") return ["微醺", "浓郁", "果味", "清爽", "甘甜"];
     if (mealType === "饮品") return ["冰爽", "常温", "热饮", "甜口", "微酸"];
     if (mealType === "下午茶") return ["甜口", "咸口", "清淡", "奶香"];
+    if (mealType === "汤类") return ["清淡", "浓郁", "酸辣", "香辣"];
     return ["清淡", "甜口", "咸香", "香辣"];
   };
 
-  const showPeopleFilter = ["正餐", "轻食", "早餐"].includes(mealType);
-  const showTimeFilter = ["正餐", "早餐"].includes(mealType);
+  const showTimeFilter = ["正餐", "早餐", "汤类"].includes(mealType);
   const showAlcoholFilter = mealType === "饮品";
-  const tasteLabel = mealType === "饮品" ? "口感偏好" : "口味偏好";
+  const tasteLabel = mealType === "饮品" ? (drinkAlcohol === "含酒精" ? "风味偏好" : "口感偏好") : "口味偏好";
 
   return (
     <div className="min-h-screen bg-surface max-w-md mx-auto relative shadow-2xl animate-in slide-in-from-bottom duration-500">
