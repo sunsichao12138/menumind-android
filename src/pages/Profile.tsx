@@ -199,9 +199,9 @@ export default function Profile() {
             <div className="w-10 h-10 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 flex-shrink-0 group-hover:scale-110 transition-transform">
               <Heart size={18} fill="currentColor" />
             </div>
-            <div className="text-left">
-              <span className="block text-lg font-black text-zinc-900 leading-tight">{favorites.length}</span>
-              <span className="text-[10px] font-bold text-zinc-400">我的收藏</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[13px] font-bold text-zinc-600">我的收藏</span>
+              <span className="text-[13px] font-black text-zinc-900">{favorites.length}</span>
             </div>
           </motion.button>
 
@@ -213,9 +213,9 @@ export default function Profile() {
             <div className="w-10 h-10 rounded-2xl bg-zinc-50 flex items-center justify-center text-zinc-400 flex-shrink-0 group-hover:scale-110 transition-transform">
               <History size={18} />
             </div>
-            <div className="text-left">
-              <span className="block text-lg font-black text-zinc-900 leading-tight">{history.length}</span>
-              <span className="text-[10px] font-bold text-zinc-400">历史记录</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[13px] font-bold text-zinc-600">历史记录</span>
+              <span className="text-[13px] font-black text-zinc-900">{history.length}</span>
             </div>
           </motion.button>
         </section>
