@@ -318,7 +318,7 @@ export default function Filters() {
                     onClick={() => navigate(`/recipe/${recipe.id}`)}
                     className="group rounded-3xl overflow-hidden border border-zinc-200 p-4 bg-zinc-50/50 hover:bg-zinc-50 transition-colors cursor-pointer relative editorial-shadow"
                   >
-                    {recipe.matchPercentage && (
+                    {recipe.matchPercentage != null && recipe.matchPercentage > 0 && (
                       <div className="absolute top-4 right-4">
                         <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
                           {recipe.matchPercentage}%
@@ -355,7 +355,7 @@ export default function Filters() {
                           <span className="flex items-center gap-1">
                             <Clock size={14} /> {recipe.time}
                           </span>
-                          {recipe.inventoryMatch !== undefined && recipe.inventoryMatch !== null && (
+                          {recipe.inventoryMatch !== undefined && recipe.inventoryMatch !== null && recipe.inventoryMatch > 0 && (
                             <span className="flex items-center gap-1">
                               <Package size={14} /> {recipe.inventoryMatch}种库存
                             </span>
