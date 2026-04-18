@@ -190,38 +190,32 @@ export default function Profile() {
 
       <main className="px-6 mt-4 relative z-10 space-y-4">
         {/* Quick Stats */}
-        <section className="bg-white rounded-[2rem] shadow-sm border border-zinc-100 overflow-hidden">
+        <section className="grid grid-cols-2 gap-3">
           <motion.button 
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowFavorites(true)}
-            className="w-full flex items-center justify-between p-4 group border-b border-zinc-50"
+            className="bg-white rounded-2xl shadow-sm border border-zinc-100 p-4 flex items-center gap-3 group"
           >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 group-hover:scale-110 transition-transform">
-                <Heart size={20} fill="currentColor" />
-              </div>
-              <span className="font-bold text-zinc-700">我的收藏</span>
+            <div className="w-10 h-10 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 flex-shrink-0 group-hover:scale-110 transition-transform">
+              <Heart size={18} fill="currentColor" />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-black text-zinc-900">{favorites.length}</span>
-              <ChevronRight size={18} className="text-zinc-300 group-hover:translate-x-1 transition-transform" />
+            <div className="text-left">
+              <span className="block text-lg font-black text-zinc-900 leading-tight">{favorites.length}</span>
+              <span className="text-[10px] font-bold text-zinc-400">我的收藏</span>
             </div>
           </motion.button>
 
           <motion.button 
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowHistory(true)}
-            className="w-full flex items-center justify-between p-4 group"
+            className="bg-white rounded-2xl shadow-sm border border-zinc-100 p-4 flex items-center gap-3 group"
           >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-2xl bg-zinc-50 flex items-center justify-center text-zinc-400 group-hover:scale-110 transition-transform">
-                <History size={20} />
-              </div>
-              <span className="font-bold text-zinc-700">历史记录</span>
+            <div className="w-10 h-10 rounded-2xl bg-zinc-50 flex items-center justify-center text-zinc-400 flex-shrink-0 group-hover:scale-110 transition-transform">
+              <History size={18} />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-black text-zinc-900">{history.length}</span>
-              <ChevronRight size={18} className="text-zinc-300 group-hover:translate-x-1 transition-transform" />
+            <div className="text-left">
+              <span className="block text-lg font-black text-zinc-900 leading-tight">{history.length}</span>
+              <span className="text-[10px] font-bold text-zinc-400">历史记录</span>
             </div>
           </motion.button>
         </section>
