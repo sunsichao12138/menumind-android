@@ -108,7 +108,7 @@ export default function Filters() {
   ];
 
   const getTasteOptions = () => {
-    if (mealType === "饮品" && drinkAlcohol === "含酒精") return ["微醺", "浓郁", "果味", "清爽", "甘甜"];
+    if (mealType === "饮品" && drinkAlcohol === "含酒精") return ["微醺", "烈酒", "果味", "清爽", "甘甜"];
     if (mealType === "饮品") return ["冰爽", "常温", "热饮", "甜口", "微酸"];
     if (mealType === "下午茶") return ["甜口", "咸口", "清淡", "奶香"];
     if (mealType === "汤类") return ["清淡", "浓郁", "酸辣", "香辣"];
