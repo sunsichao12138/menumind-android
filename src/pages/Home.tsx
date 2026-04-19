@@ -286,6 +286,11 @@ export default function Home() {
                       </button>
                     </div>
 
+                    {/* Hint */}
+                    <p className="text-[11px] text-on-surface-variant leading-snug line-clamp-1">
+                      {pick.hint || pick.description}
+                    </p>
+
                     {/* Slot Tag */}
                     <div className="flex items-center gap-1.5">
                       <span className={cn(
