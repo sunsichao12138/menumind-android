@@ -156,11 +156,11 @@ export default function Home() {
   };
 
   return (
-    <div className="px-5 pt-10 pb-12 space-y-4 animate-in fade-in duration-500">
+    <div className="px-5 pt-12 pb-12 space-y-5 animate-in fade-in duration-500">
       {/* Header */}
       <section>
-        <h1 className="text-2xl font-extrabold text-on-surface tracking-tight">今日推荐</h1>
-        <p className="text-on-surface-variant text-sm mt-0.5 font-bold">{getGreeting()}</p>
+        <h1 className="text-3xl font-bold text-on-surface tracking-tight">今日推荐</h1>
+        <p className="text-on-surface-variant text-base mt-1 font-bold">{getGreeting()}</p>
       </section>
 
       {/* AI Recommendation Banner */}
@@ -187,8 +187,8 @@ export default function Home() {
 
       {/* Quick Tags */}
       <section>
-        <div className="flex justify-between items-center mb-2">
-          <h4 className="font-bold text-sm text-on-surface">你现在更想要</h4>
+        <div className="flex justify-between items-center mb-3">
+          <h4 className="font-bold text-base text-on-surface">你现在更想要</h4>
           <button 
             onClick={refreshTags}
             disabled={isRefreshing}
@@ -225,9 +225,9 @@ export default function Home() {
       </section>
 
       {/* Recipe Cards — 2 Column Grid */}
-      <section className="space-y-2">
+      <section className="space-y-3">
         <div className="flex justify-between items-center">
-          <h4 className="font-bold text-sm text-on-surface">为你精选</h4>
+          <h4 className="font-bold text-base text-on-surface">为你精选</h4>
         </div>
 
         {!hasData ? (
@@ -239,7 +239,7 @@ export default function Home() {
             <p className="text-on-surface-variant/60 text-xs mt-1">添加冰箱食材后推荐更精准</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {picks.map((pick, index) => {
               const slotCfg = SLOT_CONFIG[pick.slot];
               const SlotIcon = slotCfg.icon;
