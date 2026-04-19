@@ -409,25 +409,32 @@ export default function Plan() {
               <div className="flex-grow overflow-y-auto custom-scrollbar pb-3">
                 <div className="border border-zinc-100 rounded-2xl p-2.5 bg-zinc-50/20">
                   {consumeList.map((item, index) => (
-                    <div key={index} className="flex items-center gap-2 p-2.5 bg-white rounded-xl border border-zinc-100/80 mb-1.5 last:mb-0 shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
-                      <span className="font-extrabold text-zinc-900 text-[13px] flex-shrink-0 truncate max-w-[72px]">{item.name}</span>
-                      <span className="text-[9px] text-zinc-400 font-bold flex-shrink-0">需{item.requiredStr}</span>
-                      <span className="text-[9px] text-zinc-400 font-bold flex-shrink-0">存<span className="text-zinc-700 font-extrabold ml-0.5">{item.stock}</span></span>
-                      <div className="flex items-center gap-1 ml-auto flex-shrink-0">
-                        <span className="text-[9px] text-zinc-400 font-bold">耗</span>
-                        <div className="flex items-center h-[26px] rounded-full border border-zinc-200 bg-white px-2 shadow-sm">
-                          <input 
-                            type="number" 
-                            value={item.amount}
-                            onChange={(e) => {
-                              const val = parseFloat(e.target.value) || 0;
-                              const newList = [...consumeList];
-                              newList[index].amount = val;
-                              setConsumeList(newList);
-                            }}
-                            className="w-8 text-center bg-transparent focus:outline-none font-bold text-zinc-900 text-[12px]"
-                          />
-                          {item.unit && <span className="text-zinc-400 text-[9px] font-bold">{item.unit}</span>}
+                    <div key={index} className="flex flex-col p-3 bg-white rounded-2xl border border-zinc-100/80 mb-2 last:mb-0 shadow-[0_1px_8px_rgba(0,0,0,0.02)]">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-extrabold text-zinc-900 text-[14px]">{item.name}</span>
+                        <span className="text-[11px] text-zinc-400 font-bold">所需 {item.requiredStr}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="text-[11px] text-zinc-400 font-bold flex-1 flex items-center">
+                          库存 <span className="text-zinc-700 ml-1.5 font-extrabold">{item.stock}</span>
+                        </div>
+                        <div className="text-zinc-200 mx-2"><ArrowRight size={14} /></div>
+                        <div className="flex items-center gap-2 flex-1 justify-end">
+                          <span className="text-[11px] text-zinc-400 font-bold">消耗</span>
+                          <div className="flex items-center h-[30px] rounded-full border border-zinc-200 bg-white px-2.5 flex-shrink-0 shadow-sm">
+                            <input 
+                              type="number" 
+                              value={item.amount}
+                              onChange={(e) => {
+                                const val = parseFloat(e.target.value) || 0;
+                                const newList = [...consumeList];
+                                newList[index].amount = val;
+                                setConsumeList(newList);
+                              }}
+                              className="w-10 text-center bg-transparent focus:outline-none font-bold text-zinc-900 text-[13px]"
+                            />
+                            {item.unit && <span className="ml-0.5 text-zinc-400 text-[10px] font-bold">{item.unit}</span>}
+                          </div>
                         </div>
                       </div>
                     </div>
