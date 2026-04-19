@@ -484,7 +484,7 @@ export default function Plan() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 200 }}
-              className="relative bg-white w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+              className="relative bg-white w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 shadow-2xl flex flex-col max-h-[75vh] overflow-hidden"
             >
               <button 
                 onClick={() => { setShowCookingComplete(false); setCompletedRecipes([]); }}
