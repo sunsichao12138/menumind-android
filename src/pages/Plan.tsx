@@ -472,7 +472,7 @@ export default function Plan() {
       {/* Cooking Complete Modal */}
       <AnimatePresence>
         {showCookingComplete && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6">
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-5 pb-24">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -480,11 +480,11 @@ export default function Plan() {
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             />
             <motion.div 
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 28, stiffness: 200 }}
-              className="relative bg-white w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 shadow-2xl flex flex-col max-h-[75vh] overflow-hidden"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="relative bg-white w-full max-w-md rounded-[2rem] p-5 shadow-2xl flex flex-col max-h-[70vh] overflow-hidden"
             >
               <button 
                 onClick={() => { setShowCookingComplete(false); setCompletedRecipes([]); }}
