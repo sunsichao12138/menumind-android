@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, ArrowRight, Sparkles, Clock, Check, Trash2, X, ChefHat, ShoppingBasket, Loader2, ChevronDown, ChevronUp, Users, User, UserPlus, Camera, MessageSquare, PartyPopper } from "lucide-react";
+import { Calendar, ArrowRight, Sparkles, Clock, Check, Trash2, X, ChefHat, ShoppingBasket, Loader2, ChevronDown, ChevronUp, Users, User, UserPlus, Camera, MessageSquare, PartyPopper, Flame } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { usePlan } from "../context/PlanContext";
 import { cn } from "../lib/utils";
 import { api } from "../api/client";
 import { useFamily } from "../context/FamilyContext";
 import FamilyModal from "../components/FamilyModal";
+import { NutritionInfo } from "../types";
 
 export default function Plan() {
   const navigate = useNavigate();
@@ -19,7 +20,27 @@ export default function Plan() {
   const [showFamilyModal, setShowFamilyModal] = useState(false);
   const { families, currentFamily, mode, switchMode } = useFamily();
   const [showCookingComplete, setShowCookingComplete] = useState(false);
-  const [completedRecipes, setCompletedRecipes] = useState<Array<{id: string, name: string, image: string, note: string, photo: string | null}>>([]); 
+  const [completedRecipes, setCompletedRecipes] = useState<Array<{id: string, name: string, image: string, note: string, photo: string | null}>>([]);
+
+  // ── 营养统计 ──
+  interface DailyNutritionStats {
+    totalCalories: number; totalProtein: number; totalFat: number; totalCarbs: number;
+    totalFiber: number; totalSodium: number; totalSugar: number;
+    recipeCount: number; analyzedCount: number;
+    recipes: Array<{ recipeId: string; name: string; calories: number }>;
+    unanalyzed: Array<{ recipeId: string; name: string }>;
+  }
+  const [nutritionStats, setNutritionStats] = useState<DailyNutritionStats | null>(null);
+  const [nutritionLoading, setNutritionLoading] = useState(false);
+
+  useEffect(() => {
+    if (plannedRecipes.length === 0) { setNutritionStats(null); return; }
+    setNutritionLoading(true);
+    api.get<DailyNutritionStats>("/nutrition/daily/stats")
+      .then(setNutritionStats)
+      .catch(() => {})
+      .finally(() => setNutritionLoading(false));
+  }, [plannedRecipes.length]); 
   const photoInputRefs = React.useRef<Record<string, HTMLInputElement | null>>({});
 
   const toggleSelect = (id: string, e: React.MouseEvent) => {
@@ -223,6 +244,78 @@ export default function Plan() {
             )}
           </div>
         </button>
+      )}
+
+      {/* ── 营养概览卡 ── */}
+      {plannedRecipes.length > 0 && nutritionStats && nutritionStats.analyzedCount > 0 && (() => {
+        const ns = nutritionStats;
+        const pCal = ns.totalProtein * 4, fCal = ns.totalFat * 9, cCal = ns.totalCarbs * 4;
+        const total = pCal + fCal + cCal || 1;
+        const pPct = Math.round((pCal / total) * 100);
+        const fPct = Math.round((fCal / total) * 100);
+        const cPct = 100 - pPct - fPct;
+        const calPct = Math.min(Math.round((ns.totalCalories / 2000) * 100), 150);
+        const conic = `conic-gradient(#6366f1 0deg ${pPct*3.6}deg, #f59e0b ${pPct*3.6}deg ${(pPct+fPct)*3.6}deg, #10b981 ${(pPct+fPct)*3.6}deg 360deg)`;
+        return (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-br from-orange-50/80 to-amber-50/60 p-5 rounded-3xl border border-orange-100/80 shadow-sm -mt-4"
+          >
+            <div className="flex items-center gap-5">
+              {/* 环形图 */}
+              <div className="relative w-20 h-20 flex-shrink-0">
+                <div className="w-full h-full rounded-full" style={{
+                  background: conic,
+                  mask: 'radial-gradient(farthest-side, transparent 58%, black 59%)',
+                  WebkitMask: 'radial-gradient(farthest-side, transparent 58%, black 59%)',
+                }} />
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-lg font-black text-zinc-900 leading-none">{ns.totalCalories}</span>
+                  <span className="text-[8px] text-zinc-400 font-bold">kcal</span>
+                </div>
+              </div>
+              {/* 数值 */}
+              <div className="flex-1 space-y-2">
+                {[
+                  { label: '蛋白质', value: ns.totalProtein, pct: pPct, color: '#6366f1' },
+                  { label: '脂肪', value: ns.totalFat, pct: fPct, color: '#f59e0b' },
+                  { label: '碳水', value: ns.totalCarbs, pct: cPct, color: '#10b981' },
+                ].map(m => (
+                  <div key={m.label} className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: m.color }} />
+                    <span className="text-[10px] text-zinc-500 w-8 font-medium">{m.label}</span>
+                    <div className="flex-1 h-1.5 bg-white/60 rounded-full overflow-hidden">
+                      <motion.div initial={{ width: 0 }} animate={{ width: `${m.pct}%` }} transition={{ duration: 0.6 }} className="h-full rounded-full" style={{ backgroundColor: m.color }} />
+                    </div>
+                    <span className="text-[10px] font-bold text-zinc-700 w-10 text-right">{m.value}g</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* 热量进度 */}
+            <div className="mt-3 flex items-center gap-3">
+              <Flame size={12} className="text-orange-400 flex-shrink-0" />
+              <div className="flex-1 h-1.5 bg-white/50 rounded-full overflow-hidden">
+                <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(calPct, 100)}%` }} transition={{ duration: 0.8 }}
+                  className={cn('h-full rounded-full', calPct > 100 ? 'bg-red-400' : 'bg-gradient-to-r from-orange-400 to-amber-400')} />
+              </div>
+              <span className={cn('text-[10px] font-black', calPct > 100 ? 'text-red-500' : 'text-orange-500')}>{calPct}%</span>
+            </div>
+            {ns.unanalyzed?.length > 0 && (
+              <p className="text-[9px] text-zinc-400 mt-2 text-center">
+                还有 {ns.unanalyzed.length} 道菜品未分析营养 · 进入菜品详情的「营养」Tab 可分析
+              </p>
+            )}
+          </motion.div>
+        );
+      })()}
+
+      {plannedRecipes.length > 0 && nutritionLoading && (
+        <div className="flex items-center justify-center gap-2 py-3 -mt-4">
+          <Loader2 size={14} className="animate-spin text-zinc-300" />
+          <span className="text-[10px] text-zinc-400">加载营养数据...</span>
+        </div>
       )}
 
       {plannedRecipes.length > 0 ? (
