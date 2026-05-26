@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MenuMind · 小灶 — AI 智能营养管家 | 产品 Demo</title>
+<meta name="description" content="MenuMind（小灶）是一款面向家庭烹饪场景的 AI 营养分析产品，帮助用户了解每餐营养摄入。">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════ */
+/*  Design System                         */
+/* ═══════════════════════════════════════ */
+:root {
+  --primary: #f97316;
+  --primary-light: #fed7aa;
+  --primary-dark: #c2410c;
+  --bg: #fafafa;
+  --text: #18181b;
+  --text-secondary: #71717a;
+  --text-muted: #a1a1aa;
+  --surface: #ffffff;
+  --border: #f4f4f5;
+  --radius: 24px;
+  --font-sans: 'Inter', 'Noto Sans SC', -apple-system, sans-serif;
+  --indigo: #6366f1;
+  --amber: #f59e0b;
+  --emerald: #10b981;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+button { font: inherit; cursor: pointer; border: none; background: none; }
+
+/* Utility */
+.container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+.section { padding: 100px 0; }
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+  padding: 6px 16px; border-radius: 100px;
+  background: var(--primary-light); color: var(--primary-dark);
+}
+.section-title {
+  font-size: clamp(28px, 5vw, 42px); font-weight: 900; line-height: 1.2;
+  margin: 16px 0 12px;
+}
+.section-desc {
+  font-size: 15px; color: var(--text-secondary); max-width: 540px; line-height: 1.8;
+}
+
+/* ═══════════════ ANIMATIONS ═══════════════ */
+@keyframes float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-12px) } }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px) }
+  to { opacity: 1; transform: translateY(0) }
+}
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 1 }
+  100% { transform: scale(1.4); opacity: 0 }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0 }
+  100% { background-position: 200% 0 }
+}
+.animate-fade-up {
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.animate-fade-up.visible { opacity: 1; transform: translateY(0); }
+
+/* ═══════════════ NAV ═══════════════ */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 16px 0;
+  background: rgba(250,250,250,0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.nav.scrolled {
+  border-bottom-color: var(--border);
+  box-shadow: 0 1px 30px rgba(0,0,0,0.04);
+}
+.nav-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  max-width: 1100px; margin: 0 auto; padding: 0 24px;
+}
+.nav-logo {
+  font-size: 20px; font-weight: 900; display: flex; align-items: center; gap: 8px;
+}
+.nav-logo span { color: var(--primary); }
+.nav-links { display: flex; gap: 32px; }
+.nav-links a {
+  font-size: 13px; font-weight: 600; color: var(--text-secondary);
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-cta {
+  padding: 10px 24px; border-radius: 100px; font-size: 13px; font-weight: 700;
+  background: var(--text); color: white;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.nav-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+
+/* ═══════════════ HERO ═══════════════ */
+.hero {
+  min-height: 100vh; display: flex; align-items: center;
+  padding: 120px 0 80px;
+  background: linear-gradient(135deg, #18181b 0%, #27272a 50%, #1c1917 100%);
+  color: white; position: relative; overflow: hidden;
+}
+.hero::before {
+  content: ''; position: absolute; top: -50%; right: -30%;
+  width: 800px; height: 800px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(249,115,22,0.15) 0%, transparent 70%);
+  animation: float 8s ease-in-out infinite;
+}
+.hero::after {
+  content: ''; position: absolute; bottom: -40%; left: -20%;
+  width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%);
+  animation: float 10s ease-in-out infinite 2s;
+}
+.hero-inner {
+  max-width: 1100px; margin: 0 auto; padding: 0 24px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+  position: relative; z-index: 1;
+}
+.hero-text h1 {
+  font-size: clamp(36px, 6vw, 56px); font-weight: 900; line-height: 1.15;
+  margin-bottom: 20px;
+}
+.hero-text h1 em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--primary), #fbbf24);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-text p {
+  font-size: 16px; color: rgba(255,255,255,0.6); line-height: 1.8; margin-bottom: 36px;
+  max-width: 440px;
+}
+.hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 16px 32px; border-radius: 100px; font-weight: 700; font-size: 15px;
+  background: linear-gradient(135deg, var(--primary), #ea580c);
+  color: white; box-shadow: 0 8px 30px rgba(249,115,22,0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(249,115,22,0.45); }
+.btn-outline {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 16px 32px; border-radius: 100px; font-weight: 700; font-size: 15px;
+  border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.8);
+  transition: all 0.2s;
+}
+.btn-outline:hover { border-color: rgba(255,255,255,0.4); color: white; background: rgba(255,255,255,0.05); }
+
+/* Hero Phone */
+.hero-phone-wrap { display: flex; justify-content: center; perspective: 1200px; }
+.hero-phone {
+  width: 280px; height: 580px; border-radius: 40px;
+  background: #1a1a1a; padding: 12px;
+  box-shadow: 0 50px 100px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
+  animation: float 6s ease-in-out infinite;
+  position: relative; overflow: hidden;
+}
+.hero-phone-screen {
+  width: 100%; height: 100%; border-radius: 30px; overflow: hidden;
+  background: #fff;
+}
+.hero-phone-notch {
+  width: 100px; height: 28px; background: #1a1a1a;
+  border-radius: 0 0 18px 18px; margin: 0 auto; position: relative; z-index: 2;
+}
+
+/* ═══════════════ PAIN POINTS ═══════════════ */
+.pain-section { background: white; }
+.pain-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  margin-top: 48px;
+}
+.pain-card {
+  padding: 36px 28px; border-radius: 24px;
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, #fafafa, white);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.pain-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.06);
+}
+.pain-icon {
+  width: 56px; height: 56px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; margin-bottom: 20px;
+}
+.pain-card h3 { font-size: 18px; font-weight: 800; margin-bottom: 10px; }
+.pain-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+.pain-stat {
+  margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);
+  font-size: 28px; font-weight: 900; color: var(--primary);
+}
+.pain-stat span { font-size: 12px; color: var(--text-muted); font-weight: 600; display: block; margin-top: 2px; }
+
+/* ═══════════════ SOLUTION ═══════════════ */
+.solution-section {
+  background: linear-gradient(180deg, var(--bg) 0%, white 100%);
+}
+.solution-flow {
+  display: flex; align-items: flex-start; gap: 16px; margin-top: 48px;
+  overflow-x: auto; padding-bottom: 16px;
+}
+.flow-step {
+  flex-shrink: 0; width: 240px; padding: 28px 24px; border-radius: 24px;
+  background: white; border: 1px solid var(--border);
+  position: relative; transition: transform 0.3s, box-shadow 0.3s;
+}
+.flow-step:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.06); }
+.flow-step-num {
+  width: 32px; height: 32px; border-radius: 10px;
+  background: var(--primary); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 14px; margin-bottom: 16px;
+}
+.flow-step h4 { font-size: 15px; font-weight: 800; margin-bottom: 8px; }
+.flow-step p { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+.flow-arrow {
+  flex-shrink: 0; display: flex; align-items: center;
+  font-size: 20px; color: var(--text-muted); margin-top: 60px;
+}
+
+/* ═══════════════ INTERACTIVE DEMO ═══════════════ */
+.demo-section { background: #18181b; color: white; position: relative; overflow: hidden; }
+.demo-section::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(249,115,22,0.08) 0%, transparent 60%);
+}
+.demo-section .section-desc { color: rgba(255,255,255,0.5); }
+.demo-content {
+  display: grid; grid-template-columns: 1fr 320px; gap: 60px;
+  align-items: start; margin-top: 48px; position: relative; z-index: 1;
+}
+.demo-tabs { display: flex; flex-direction: column; gap: 12px; }
+.demo-tab {
+  padding: 20px 24px; border-radius: 20px; text-align: left;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+  transition: all 0.3s; display: flex; gap: 16px; align-items: flex-start;
+}
+.demo-tab:hover { background: rgba(255,255,255,0.06); }
+.demo-tab.active {
+  background: rgba(249,115,22,0.1); border-color: rgba(249,115,22,0.3);
+}
+.demo-tab-icon {
+  width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  background: rgba(255,255,255,0.06);
+}
+.demo-tab.active .demo-tab-icon { background: rgba(249,115,22,0.15); }
+.demo-tab h4 {
+  font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.9);
+  margin-bottom: 4px;
+}
+.demo-tab p { font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.5; }
+.demo-tab.active h4 { color: var(--primary-light); }
+
+/* Demo Phone */
+.demo-phone {
+  width: 300px; border-radius: 40px;
+  background: #1a1a1a; padding: 10px;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+  position: sticky; top: 100px;
+}
+.demo-screen {
+  border-radius: 32px; overflow: hidden;
+  background: white; color: var(--text);
+  height: 600px; position: relative;
+}
+.demo-screen-content {
+  position: absolute; inset: 0;
+  opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease;
+  transform: translateY(10px);
+  overflow-y: auto; overflow-x: hidden;
+}
+.demo-screen-content.active {
+  opacity: 1; transform: translateY(0);
+}
+
+/* Screen 1: 冰箱 */
+.screen-fridge { padding: 0; }
+.screen-fridge .screen-header {
+  padding: 44px 20px 16px; background: white;
+}
+.screen-fridge .screen-header h2 {
+  font-size: 22px; font-weight: 900; color: var(--text);
+}
+.screen-fridge .screen-header p { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+.ingredient-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  padding: 0 16px 16px;
+}
+.ingredient-item {
+  text-align: center; padding: 14px 8px; border-radius: 18px;
+  background: #fafafa; border: 1px solid #f4f4f5;
+}
+.ingredient-item .emoji { font-size: 28px; margin-bottom: 6px; }
+.ingredient-item .name { font-size: 11px; font-weight: 700; color: var(--text); }
+.ingredient-item .amount { font-size: 9px; color: var(--text-muted); font-weight: 600; }
+
+/* Screen 2: 推荐 */
+.screen-recommend { padding: 0; }
+.screen-recommend .screen-header {
+  padding: 44px 20px 16px;
+}
+.screen-recommend .screen-header h2 { font-size: 22px; font-weight: 900; }
+.recipe-card {
+  margin: 0 16px 12px; padding: 12px; border-radius: 20px;
+  background: white; border: 1px solid #f4f4f5;
+  display: flex; gap: 12px; align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.recipe-img {
+  width: 72px; height: 72px; border-radius: 16px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px;
+}
+.recipe-info h4 { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+.recipe-info p { font-size: 10px; color: var(--text-muted); line-height: 1.4; }
+.recipe-match {
+  font-size: 9px; font-weight: 800; color: var(--primary);
+  background: var(--primary-light); padding: 3px 8px; border-radius: 6px;
+  display: inline-block; margin-top: 6px;
+}
+
+/* Screen 3: 营养分析 */
+.screen-nutrition { padding: 0; }
+.screen-nutrition .screen-header {
+  padding: 44px 20px 16px;
+}
+.screen-nutrition .screen-header h2 { font-size: 22px; font-weight: 900; }
+.nutrition-hero-card {
+  margin: 0 16px 16px; padding: 20px;
+  background: linear-gradient(135deg, #fff7ed, #fffbeb);
+  border-radius: 24px; border: 1px solid #fed7aa;
+  display: flex; align-items: center; gap: 20px;
+}
+.donut-chart {
+  width: 90px; height: 90px; border-radius: 50%; flex-shrink: 0;
+  position: relative;
+}
+.donut-chart .ring {
+  width: 100%; height: 100%; border-radius: 50%;
+  background: conic-gradient(
+    var(--indigo) 0deg 108deg,
+    var(--amber) 108deg 234deg,
+    var(--emerald) 234deg 360deg
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent 58%, black 59%);
+  mask: radial-gradient(farthest-side, transparent 58%, black 59%);
+}
+.donut-chart .center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.donut-chart .center strong { font-size: 18px; font-weight: 900; }
+.donut-chart .center small { font-size: 8px; color: var(--text-muted); font-weight: 700; }
+.macro-bars { flex: 1; }
+.macro-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.macro-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.macro-label { font-size: 9px; color: var(--text-secondary); width: 32px; font-weight: 600; }
+.macro-bar-bg { flex: 1; height: 5px; background: rgba(0,0,0,0.05); border-radius: 3px; overflow: hidden; }
+.macro-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+.macro-value { font-size: 9px; font-weight: 800; width: 32px; text-align: right; }
+.nutrient-pills {
+  display: flex; gap: 8px; padding: 0 16px; margin-bottom: 16px;
+}
+.nutrient-pill {
+  font-size: 10px; font-weight: 700; color: var(--text-secondary);
+  background: #f4f4f5; padding: 6px 12px; border-radius: 100px;
+}
+.ingredient-detail-card {
+  margin: 0 16px 8px; padding: 14px 16px;
+  background: #fafafa; border-radius: 16px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.ingredient-detail-card .left h5 { font-size: 13px; font-weight: 700; }
+.ingredient-detail-card .left span { font-size: 9px; color: var(--text-muted); }
+.ingredient-detail-card .right { font-size: 11px; font-weight: 800; color: var(--primary); }
+
+/* Screen 4: 计划统计 */
+.screen-plan { padding: 0; }
+.screen-plan .screen-header { padding: 44px 20px 16px; }
+.screen-plan .screen-header h2 { font-size: 22px; font-weight: 900; }
+.plan-summary {
+  margin: 0 16px 16px; padding: 20px;
+  background: linear-gradient(135deg, #fff7ed, #fffbeb);
+  border-radius: 24px; border: 1px solid #fed7aa;
+}
+.plan-summary .summary-row {
+  display: flex; align-items: center; gap: 20px;
+}
+.plan-recipe-item {
+  margin: 0 16px 10px; padding: 12px 16px;
+  background: white; border-radius: 16px; border: 1px solid #f4f4f5;
+  display: flex; align-items: center; gap: 12px;
+}
+.plan-recipe-item .check {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--primary); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 900; flex-shrink: 0;
+}
+.plan-recipe-item .info { flex: 1; }
+.plan-recipe-item .info h5 { font-size: 13px; font-weight: 700; }
+.plan-recipe-item .info span { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+.plan-recipe-item .kcal { font-size: 12px; font-weight: 800; color: var(--primary); }
+
+/* ═══════════════ FEATURES ═══════════════ */
+.features-section { background: white; }
+.features-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;
+  margin-top: 48px;
+}
+.feature-card {
+  padding: 32px 28px; border-radius: 24px;
+  background: var(--bg); border: 1px solid var(--border);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.05); }
+.feature-icon {
+  width: 48px; height: 48px; border-radius: 14px; margin-bottom: 16px;
+  display: flex; align-items: center; justify-content: center; font-size: 24px;
+}
+.feature-card h4 { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+.feature-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+
+/* ═══════════════ PERSONA ═══════════════ */
+.persona-section { background: var(--bg); }
+.persona-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  margin-top: 48px;
+}
+.persona-card {
+  padding: 32px 24px; border-radius: 24px;
+  background: white; border: 1px solid var(--border);
+  text-align: center;
+}
+.persona-avatar {
+  width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px; background: #f4f4f5;
+}
+.persona-card h4 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+.persona-card .tag {
+  font-size: 10px; font-weight: 700; color: var(--primary);
+  background: var(--primary-light); padding: 3px 10px; border-radius: 6px;
+  display: inline-block; margin-bottom: 12px;
+}
+.persona-card p { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+.persona-card .quote {
+  margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);
+  font-size: 12px; font-style: italic; color: var(--text-muted);
+}
+
+/* ═══════════════ COMPETITION ═══════════════ */
+.compete-section { background: white; }
+.compete-table {
+  margin-top: 48px; border-radius: 20px; overflow: hidden;
+  border: 1px solid var(--border);
+}
+.compete-table table { width: 100%; border-collapse: collapse; }
+.compete-table th {
+  padding: 16px 20px; background: #fafafa; font-size: 12px; font-weight: 700;
+  color: var(--text-secondary); text-align: left; border-bottom: 1px solid var(--border);
+}
+.compete-table th:first-child { width: 160px; }
+.compete-table td {
+  padding: 14px 20px; font-size: 13px; border-bottom: 1px solid var(--border);
+}
+.compete-table tr:last-child td { border-bottom: none; }
+.compete-table .highlight { background: #fffbeb; }
+.compete-table .check-icon { color: var(--emerald); font-weight: 900; }
+.compete-table .cross-icon { color: #ef4444; font-weight: 900; }
+.compete-table .partial-icon { color: var(--amber); font-weight: 900; }
+
+/* ═══════════════ BUSINESS ═══════════════ */
+.business-section {
+  background: linear-gradient(135deg, #18181b, #27272a);
+  color: white;
+}
+.business-section .section-desc { color: rgba(255,255,255,0.5); }
+.business-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  margin-top: 48px;
+}
+.business-card {
+  padding: 32px 24px; border-radius: 24px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+  transition: transform 0.3s, background 0.3s;
+}
+.business-card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.06); }
+.business-card .icon {
+  font-size: 32px; margin-bottom: 16px;
+}
+.business-card h4 { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+.business-card p { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.7; }
+
+/* ═══════════════ METRICS ═══════════════ */
+.metrics-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+  margin-top: 48px;
+}
+.metric-card {
+  text-align: center; padding: 28px 16px;
+  border-radius: 20px; background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.metric-card .value {
+  font-size: 36px; font-weight: 900;
+  background: linear-gradient(135deg, var(--primary), #fbbf24);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.metric-card .label { font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 600; margin-top: 4px; }
+
+/* ═══════════════ FOOTER ═══════════════ */
+.footer {
+  padding: 60px 0; text-align: center;
+  background: var(--bg); border-top: 1px solid var(--border);
+}
+.footer p { font-size: 12px; color: var(--text-muted); }
+.footer .made { margin-top: 8px; font-size: 11px; }
+
+/* ═══════════════ RESPONSIVE ═══════════════ */
+@media (max-width: 768px) {
+  .hero-inner { grid-template-columns: 1fr; text-align: center; }
+  .hero-text p { margin: 0 auto 36px; }
+  .hero-buttons { justify-content: center; }
+  .hero-phone-wrap { margin-top: 40px; }
+  .pain-grid, .features-grid, .persona-grid, .business-grid { grid-template-columns: 1fr; }
+  .demo-content { grid-template-columns: 1fr; }
+  .demo-phone { margin: 0 auto; position: static; }
+  .metrics-row { grid-template-columns: repeat(2, 1fr); }
+  .nav-links { display: none; }
+  .compete-table { overflow-x: auto; }
+  .solution-flow { flex-direction: column; align-items: center; }
+  .flow-arrow { transform: rotate(90deg); margin: 0; }
+}
+
+/* ═══════════════ TECH STACK ═══════════════ */
+.tech-section { background: var(--bg); }
+.tech-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  margin-top: 48px;
+}
+.tech-card {
+  padding: 24px 16px; border-radius: 20px;
+  background: white; border: 1px solid var(--border);
+  text-align: center; transition: transform 0.3s;
+}
+.tech-card:hover { transform: translateY(-3px); }
+.tech-card .icon { font-size: 32px; margin-bottom: 12px; }
+.tech-card h5 { font-size: 13px; font-weight: 800; margin-bottom: 4px; }
+.tech-card p { font-size: 10px; color: var(--text-muted); }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <div class="nav-logo">🍳 <span>MenuMind</span> 小灶</div>
+    <div class="nav-links">
+      <a href="#pain">痛点洞察</a>
+      <a href="#solution">解决方案</a>
+      <a href="#demo">交互演示</a>
+      <a href="#persona">用户画像</a>
+      <a href="#compete">竞品分析</a>
+      <a href="#business">商业模式</a>
+    </div>
+    <a href="#demo" class="nav-cta">体验 Demo</a>
+  </div>
+</nav>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero" id="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="badge">🔥 AI-Powered Nutrition</div>
+      <h1>家庭烹饪的<br><em>AI 营养管家</em></h1>
+      <p>MenuMind（小灶）是一款面向家庭烹饪场景的 AI 智能应用。根据你冰箱里的食材推荐菜谱，并通过 AI 自动分析每餐的营养成分，让每一顿家常菜都吃得明白。</p>
+      <div class="hero-buttons">
+        <a href="#demo" class="btn-primary">🚀 查看交互演示</a>
+        <a href="#pain" class="btn-outline">📖 了解更多</a>
+      </div>
+    </div>
+    <div class="hero-phone-wrap">
+      <div class="hero-phone">
+        <div class="hero-phone-screen">
+          <div class="hero-phone-notch"></div>
+          <div style="padding: 12px 16px;">
+            <div style="margin-bottom: 16px;">
+              <p style="font-size:10px; color:#a1a1aa; font-weight:600;">今日计划 · 3 道菜品</p>
+              <h2 style="font-size:20px; font-weight:900;">营养概览</h2>
+            </div>
+            <div class="nutrition-hero-card" style="margin:0 0 12px;">
+              <div class="donut-chart" style="width:70px;height:70px;">
+                <div class="ring"></div>
+                <div class="center"><strong style="font-size:15px">850</strong><small>kcal</small></div>
+              </div>
+              <div class="macro-bars" style="flex:1;">
+                <div class="macro-row"><div class="macro-dot" style="background:var(--indigo)"></div><span class="macro-label">蛋白质</span><div class="macro-bar-bg"><div class="macro-bar-fill" style="width:65%;background:var(--indigo)"></div></div><span class="macro-value">42g</span></div>
+                <div class="macro-row"><div class="macro-dot" style="background:var(--amber)"></div><span class="macro-label">脂肪</span><div class="macro-bar-bg"><div class="macro-bar-fill" style="width:45%;background:var(--amber)"></div></div><span class="macro-value">38g</span></div>
+                <div class="macro-row"><div class="macro-dot" style="background:var(--emerald)"></div><span class="macro-label">碳水</span><div class="macro-bar-bg"><div class="macro-bar-fill" style="width:55%;background:var(--emerald)"></div></div><span class="macro-value">95g</span></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:16px;">
+              <span class="nutrient-pill" style="font-size:9px;padding:4px 8px;">🥦 纤维 8g</span>
+              <span class="nutrient-pill" style="font-size:9px;padding:4px 8px;">🧂 钠 1200mg</span>
+            </div>
+            <div class="plan-recipe-item" style="margin:0 0 8px;"><div class="check">✓</div><div class="info"><h5>青椒肉丝</h5><span>蛋白18g · 脂肪15g · 碳水12g</span></div><span class="kcal">280kcal</span></div>
+            <div class="plan-recipe-item" style="margin:0 0 8px;"><div class="check">✓</div><div class="info"><h5>番茄炒蛋</h5><span>蛋白14g · 脂肪12g · 碳水18g</span></div><span class="kcal">220kcal</span></div>
+            <div class="plan-recipe-item" style="margin:0 0 8px;"><div class="check">✓</div><div class="info"><h5>蒜蓉西兰花</h5><span>蛋白10g · 脂肪11g · 碳水65g</span></div><span class="kcal">350kcal</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ PAIN POINTS ═══════════ -->
+<section class="section pain-section" id="pain">
+  <div class="container">
+    <div class="badge">💡 需求洞察</div>
+    <h2 class="section-title">家庭烹饪的三大痛点</h2>
+    <p class="section-desc">在健康饮食意识觉醒的今天，家庭烹饪者面临的核心困扰不是「不会做饭」，而是「不知道吃的对不对」。</p>
+    <div class="pain-grid">
+      <div class="pain-card animate-fade-up">
+        <div class="pain-icon" style="background:#fef2f2;">😵‍💫</div>
+        <h3>营养黑箱</h3>
+        <p>在家做饭的人很难知道每餐的热量和营养摄入。市面上的健康 APP 都面向外卖和预包装食品，缺少针对家庭烹饪的营养分析。</p>
+        <div class="pain-stat">78% <span>的家庭烹饪者不了解每餐热量</span></div>
+      </div>
+      <div class="pain-card animate-fade-up" style="transition-delay: 0.1s;">
+        <div class="pain-icon" style="background:#fefce8;">🤔</div>
+        <h3>不知道吃什么</h3>
+        <p>冰箱里有食材却不知道做什么菜，食材组合的可能性太多，决策疲劳严重。每天重复「今晚吃什么」的灵魂拷问。</p>
+        <div class="pain-stat">63% <span>的人每天花 20+ 分钟决定吃什么</span></div>
+      </div>
+      <div class="pain-card animate-fade-up" style="transition-delay: 0.2s;">
+        <div class="pain-icon" style="background:#ecfdf5;">🗑️</div>
+        <h3>食材浪费</h3>
+        <p>买回来的食材忘记用、不知道怎么搭配，最终过期丢弃。中国家庭每年人均浪费 64kg 食物，占购买量的 12%。</p>
+        <div class="pain-stat">12% <span>家庭食材浪费率（年均 64kg/人）</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SOLUTION ═══════════ -->
+<section class="section solution-section" id="solution">
+  <div class="container">
+    <div class="badge">✨ 解决方案</div>
+    <h2 class="section-title">AI 驱动的完整闭环</h2>
+    <p class="section-desc">MenuMind 从食材管理到营养分析，形成「录入 → 推荐 → 烹饪 → 分析」的完整链路。</p>
+    <div class="solution-flow">
+      <div class="flow-step animate-fade-up">
+        <div class="flow-step-num">1</div>
+        <h4>📦 智能冰箱</h4>
+        <p>AI 识别拍照/语音录入食材，自动追踪保质期，临期食材优先推荐。</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step animate-fade-up" style="transition-delay:0.1s">
+        <div class="flow-step-num">2</div>
+        <h4>🤖 AI 推荐</h4>
+        <p>根据现有食材 + 口味偏好 + 营养需求，三阶段 AI 引擎推荐最优菜谱。</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step animate-fade-up" style="transition-delay:0.2s">
+        <div class="flow-step-num">3</div>
+        <h4>👨‍🍳 一键烹饪</h4>
+        <p>勾选菜品开始烹饪，自动扣减库存，记录烹饪成果。</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step animate-fade-up" style="transition-delay:0.3s">
+        <div class="flow-step-num">4</div>
+        <h4>🔥 营养分析</h4>
+        <p>AI 根据食材清单自动估算营养成分，计划页实时展示每日摄入统计。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ INTERACTIVE DEMO ═══════════ -->
+<section class="section demo-section" id="demo">
+  <div class="container">
+    <div class="badge" style="background:rgba(249,115,22,0.15);color:#fdba74;">🎯 交互演示</div>
+    <h2 class="section-title">核心功能演示</h2>
+    <p class="section-desc">点击左侧功能模块，右侧手机同步切换界面。</p>
+    <div class="demo-content">
+      <div class="demo-tabs">
+        <button class="demo-tab active" data-screen="screen-1">
+          <div class="demo-tab-icon">📦</div>
+          <div><h4>智能冰箱</h4><p>AI 拍照识别食材，自动追踪库存和保质期，临期食材优先推荐使用。</p></div>
+        </button>
+        <button class="demo-tab" data-screen="screen-2">
+          <div class="demo-tab-icon">🤖</div>
+          <div><h4>AI 菜谱推荐</h4><p>三阶段推荐引擎：召回 → 排序 → LLM 重排，根据食材匹配度和口味偏好推荐。</p></div>
+        </button>
+        <button class="demo-tab" data-screen="screen-3">
+          <div class="demo-tab-icon">🔥</div>
+          <div><h4>AI 营养分析</h4><p>核心创新：AI 根据食材清单和用量，智能估算整道菜的热量和营养成分。</p></div>
+        </button>
+        <button class="demo-tab" data-screen="screen-4">
+          <div class="demo-tab-icon">📊</div>
+          <div><h4>每日营养统计</h4><p>计划页顶部实时展示已选菜品的营养汇总，勾选菜品时数据联动更新。</p></div>
+        </button>
+      </div>
+
+      <div class="demo-phone">
+        <div class="demo-screen">
+          <!-- Screen 1: 冰箱 -->
+          <div class="demo-screen-content active" id="screen-1">
+            <div class="screen-fridge">
+              <div class="screen-header">
+                <p>MY KITCHEN</p>
+                <h2>我的冰箱</h2>
+              </div>
+              <div class="ingredient-grid">
+                <div class="ingredient-item"><div class="emoji">🥚</div><div class="name">鸡蛋</div><div class="amount">6 个</div></div>
+                <div class="ingredient-item"><div class="emoji">🍅</div><div class="name">番茄</div><div class="amount">3 个</div></div>
+                <div class="ingredient-item"><div class="emoji">🥦</div><div class="name">西兰花</div><div class="amount">1 颗</div></div>
+                <div class="ingredient-item"><div class="emoji">🥩</div><div class="name">猪肉</div><div class="amount">300g</div></div>
+                <div class="ingredient-item"><div class="emoji">🫑</div><div class="name">青椒</div><div class="amount">4 个</div></div>
+                <div class="ingredient-item"><div class="emoji">🧄</div><div class="name">蒜</div><div class="amount">1 头</div></div>
+                <div class="ingredient-item"><div class="emoji">🧅</div><div class="name">洋葱</div><div class="amount">2 个</div></div>
+                <div class="ingredient-item"><div class="emoji">🥕</div><div class="name">胡萝卜</div><div class="amount">2 根</div></div>
+                <div class="ingredient-item"><div class="emoji">🍚</div><div class="name">大米</div><div class="amount">2kg</div></div>
+                <div class="ingredient-item" style="border: 1px dashed #d4d4d8; background: transparent;"><div class="emoji" style="font-size:20px;">＋</div><div class="name" style="color:#a1a1aa;">添加</div><div class="amount"></div></div>
+              </div>
+              <div style="padding: 0 16px;">
+                <div style="background:linear-gradient(135deg,var(--primary),#ea580c);color:white;padding:14px;border-radius:16px;text-align:center;font-weight:800;font-size:14px;box-shadow:0 8px 24px rgba(249,115,22,0.3);">
+                  ✨ 基于 9 种食材为你推荐菜谱
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Screen 2: 推荐 -->
+          <div class="demo-screen-content" id="screen-2">
+            <div class="screen-recommend">
+              <div class="screen-header">
+                <p style="font-size:10px;color:#a1a1aa;font-weight:600;">✨ AI 为你推荐</p>
+                <h2>今日推荐</h2>
+              </div>
+              <div class="recipe-card">
+                <div class="recipe-img" style="background:#fef2f2;">🫑🥩</div>
+                <div class="recipe-info">
+                  <h4>青椒肉丝</h4>
+                  <p>经典家常菜 · 15分钟 · 简单</p>
+                  <div class="recipe-match">食材匹配 95%</div>
+                </div>
+              </div>
+              <div class="recipe-card">
+                <div class="recipe-img" style="background:#fefce8;">🍅🥚</div>
+                <div class="recipe-info">
+                  <h4>番茄炒蛋</h4>
+                  <p>国民家常菜 · 10分钟 · 简单</p>
+                  <div class="recipe-match">食材匹配 100%</div>
+                </div>
+              </div>
+              <div class="recipe-card">
+                <div class="recipe-img" style="background:#ecfdf5;">🥦🧄</div>
+                <div class="recipe-info">
+                  <h4>蒜蓉西兰花</h4>
+                  <p>低卡轻食 · 8分钟 · 简单</p>
+                  <div class="recipe-match">食材匹配 100%</div>
+                </div>
+              </div>
+              <div class="recipe-card">
+                <div class="recipe-img" style="background:#eef2ff;">🥕🥩</div>
+                <div class="recipe-info">
+                  <h4>胡萝卜炒肉</h4>
+                  <p>营养均衡 · 12分钟 · 简单</p>
+                  <div class="recipe-match">食材匹配 90%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Screen 3: 营养分析 -->
+          <div class="demo-screen-content" id="screen-3">
+            <div class="screen-nutrition">
+              <div class="screen-header">
+                <p style="font-size:10px;color:#a1a1aa;font-weight:600;">🔥 AI 营养分析</p>
+                <h2>青椒肉丝</h2>
+              </div>
+              <div class="nutrition-hero-card">
+                <div class="donut-chart">
+                  <div class="ring"></div>
+                  <div class="center"><strong>280</strong><small>kcal</small></div>
+                </div>
+                <div class="macro-bars">
+                  <div class="macro-row"><div class="macro-dot" style="background:var(--indigo)"></div><span class="macro-label">蛋白质</span><div class="macro-bar-bg"><div class="macro-bar-fill" style="width:55%;background:var(--indigo)"></div></div><span class="macro-value">18g</span></div>
+                  <div class="macro-row"><div class="macro-dot" style="background:var(--amber)"></div><span class="macro-label">脂肪</span><div class="macro-bar-bg"><div class="macro-bar-fill" style="width:40%;background:var(--amber)"></div></div><span class="macro-value">15g</span></div>
+                  <div class="macro-row"><div class="macro-dot" style="background:var(--emerald)"></div><span class="macro-label">碳水</span><div class="macro-bar-bg"><div class="macro-bar-fill" style="width:30%;background:var(--emerald)"></div></div><span class="macro-value">12g</span></div>
+                </div>
+              </div>
+              <div class="nutrient-pills">
+                <span class="nutrient-pill">🥦 纤维 3g</span>
+                <span class="nutrient-pill">🧂 钠 580mg</span>
+                <span class="nutrient-pill" style="background:#fff7ed;color:var(--primary);">✨ AI 估算</span>
+              </div>
+              <div style="padding:0 16px 8px;"><p style="font-size:11px;font-weight:800;color:#a1a1aa;text-transform:uppercase;letter-spacing:1px;">食材营养明细</p></div>
+              <div class="ingredient-detail-card"><div class="left"><h5>猪里脊</h5><span>200g</span></div><div class="right">186 kcal</div></div>
+              <div class="ingredient-detail-card"><div class="left"><h5>青椒</h5><span>150g</span></div><div class="right">30 kcal</div></div>
+              <div class="ingredient-detail-card"><div class="left"><h5>食用油</h5><span>15ml</span></div><div class="right">45 kcal</div></div>
+              <div class="ingredient-detail-card"><div class="left"><h5>酱油</h5><span>10ml</span></div><div class="right">8 kcal</div></div>
+              <div class="ingredient-detail-card"><div class="left"><h5>淀粉</h5><span>5g</span></div><div class="right">11 kcal</div></div>
+            </div>
+          </div>
+
+          <!-- Screen 4: 计划统计 -->
+          <div class="demo-screen-content" id="screen-4">
+            <div class="screen-plan">
+              <div class="screen-header">
+                <p style="font-size:10px;color:#a1a1aa;font-weight:600;">📊 勾选 3 道菜品</p>
+                <h2>今日计划</h2>
+              </div>
+              <div class="plan-summary">
+                <div class="summary-row">
+                  <div class="donut-chart" style="width:70px;height:70px;">
+                    <div class="ring"></div>
+                    <div class="center"><strong style="font-size:15px">850</strong><small>kcal</small></div>
+                  </div>
+                  <div class="macro-bars" style="flex:1;">
+                    <div class="macro-row"><div class="macro-dot" style="background:var(--indigo)"></div><span class="macro-label">蛋白质</span><div class="macro-bar-bg"><div class="macro-bar-fill" style="width:65%;background:var(--indigo)"></div></div><span class="macro-value">42g</span></div>
+                    <div class="macro-row"><div class="macro-dot" style="background:var(--amber)"></div><span class="macro-label">脂肪</span><div class="macro-bar-bg"><div class="macro-bar-fill" style="width:45%;background:var(--amber)"></div></div><span class="macro-value">38g</span></div>
+                    <div class="macro-row"><div class="macro-dot" style="background:var(--emerald)"></div><span class="macro-label">碳水</span><div class="macro-bar-bg"><div class="macro-bar-fill" style="width:55%;background:var(--emerald)"></div></div><span class="macro-value">95g</span></div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:6px;margin-top:12px;">
+                  <span class="nutrient-pill" style="font-size:9px;padding:4px 8px;">🥦 纤维 8g</span>
+                  <span class="nutrient-pill" style="font-size:9px;padding:4px 8px;">🧂 钠 1200mg</span>
+                </div>
+              </div>
+              <div class="plan-recipe-item"><div class="check">✓</div><div class="info"><h5>青椒肉丝</h5><span>蛋白18g · 脂肪15g · 碳水12g</span></div><span class="kcal">280kcal</span></div>
+              <div class="plan-recipe-item"><div class="check">✓</div><div class="info"><h5>番茄炒蛋</h5><span>蛋白14g · 脂肪12g · 碳水18g</span></div><span class="kcal">220kcal</span></div>
+              <div class="plan-recipe-item"><div class="check">✓</div><div class="info"><h5>蒜蓉西兰花</h5><span>蛋白10g · 脂肪11g · 碳水65g</span></div><span class="kcal">350kcal</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ FEATURES ═══════════ -->
+<section class="section features-section" id="features">
+  <div class="container">
+    <div class="badge">⚡ 核心优势</div>
+    <h2 class="section-title">为什么选择 MenuMind</h2>
+    <p class="section-desc">不是又一个菜谱 APP，而是真正解决家庭烹饪全链路痛点的智能助手。</p>
+    <div class="features-grid">
+      <div class="feature-card animate-fade-up">
+        <div class="feature-icon" style="background:#eef2ff;">🧠</div>
+        <h4>三阶段 AI 推荐引擎</h4>
+        <p>召回（食材匹配）→ 排序（偏好权重）→ LLM 重排（豆包大模型），推荐精准度远超关键词搜索。</p>
+      </div>
+      <div class="feature-card animate-fade-up" style="transition-delay:0.1s">
+        <div class="feature-icon" style="background:#fff7ed;">🔥</div>
+        <h4>AI 营养成分估算</h4>
+        <p>业界首创：根据食材清单和用量，AI 自动估算整道菜的热量、蛋白质、脂肪、碳水等 7 项指标。</p>
+      </div>
+      <div class="feature-card animate-fade-up" style="transition-delay:0.2s">
+        <div class="feature-icon" style="background:#ecfdf5;">📊</div>
+        <h4>选中菜品实时统计</h4>
+        <p>在计划页勾选菜品时，顶部营养概览卡实时联动更新，帮助用户做出更健康的搭配决策。</p>
+      </div>
+      <div class="feature-card animate-fade-up" style="transition-delay:0.3s">
+        <div class="feature-icon" style="background:#fef2f2;">👨‍👩‍👧‍👦</div>
+        <h4>家庭协同</h4>
+        <p>支持创建家庭群组，共享冰箱库存和用餐计划，解决「一人买菜全家吃」的协同难题。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ PERSONA ═══════════ -->
+<section class="section persona-section" id="persona">
+  <div class="container">
+    <div class="badge">👥 用户画像</div>
+    <h2 class="section-title">我们的目标用户</h2>
+    <p class="section-desc">核心用户群体为 25-40 岁的城市家庭烹饪者，关注饮食健康但缺乏专业营养知识。</p>
+    <div class="persona-grid">
+      <div class="persona-card animate-fade-up">
+        <div class="persona-avatar">👩‍💼</div>
+        <h4>小美，28岁</h4>
+        <div class="tag">健身白领</div>
+        <p>每周在家做 4-5 次饭，正在增肌减脂。需要精确追踪蛋白质和热量摄入，但家常菜没有现成数据。</p>
+        <div class="quote">"外面的减脂餐太贵了，自己做又不知道吃了多少热量。"</div>
+      </div>
+      <div class="persona-card animate-fade-up" style="transition-delay:0.1s">
+        <div class="persona-avatar">👨‍👧</div>
+        <h4>张伟，35岁</h4>
+        <div class="tag">新手奶爸</div>
+        <p>老婆出差时负责做饭，冰箱食材不知道怎么搭配，经常做出奇怪的组合。孩子挑食需要营养均衡。</p>
+        <div class="quote">"冰箱里有一堆东西，就是不知道能做什么。"</div>
+      </div>
+      <div class="persona-card animate-fade-up" style="transition-delay:0.2s">
+        <div class="persona-avatar">👵</div>
+        <h4>李阿姨，55岁</h4>
+        <div class="tag">家庭主妇</div>
+        <p>做了 30 年饭，菜式固化。老伴刚查出高血压，需要控制钠摄入，但不知道每道菜放了多少盐。</p>
+        <div class="quote">"医生说要少盐，但我也不知道每顿到底吃了多少。"</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ COMPETITION ═══════════ -->
+<section class="section compete-section" id="compete">
+  <div class="container">
+    <div class="badge">🔍 竞品分析</div>
+    <h2 class="section-title">差异化定位</h2>
+    <p class="section-desc">MenuMind 是唯一聚焦「家庭烹饪 + AI 营养分析」交叉场景的产品。</p>
+    <div class="compete-table animate-fade-up">
+      <table>
+        <thead>
+          <tr>
+            <th>功能维度</th>
+            <th class="highlight" style="text-align:center;">🍳 MenuMind</th>
+            <th style="text-align:center;">下厨房</th>
+            <th style="text-align:center;">薄荷健康</th>
+            <th style="text-align:center;">美食杰</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>食材库存管理</td><td class="highlight check-icon" style="text-align:center;">✓</td><td class="cross-icon" style="text-align:center;">✗</td><td class="cross-icon" style="text-align:center;">✗</td><td class="cross-icon" style="text-align:center;">✗</td></tr>
+          <tr><td>根据现有食材推荐</td><td class="highlight check-icon" style="text-align:center;">✓</td><td class="cross-icon" style="text-align:center;">✗</td><td class="cross-icon" style="text-align:center;">✗</td><td class="partial-icon" style="text-align:center;">△</td></tr>
+          <tr><td>AI 菜谱推荐</td><td class="highlight check-icon" style="text-align:center;">✓</td><td class="cross-icon" style="text-align:center;">✗</td><td class="cross-icon" style="text-align:center;">✗</td><td class="cross-icon" style="text-align:center;">✗</td></tr>
+          <tr><td>家常菜营养分析</td><td class="highlight check-icon" style="text-align:center;">✓</td><td class="cross-icon" style="text-align:center;">✗</td><td class="partial-icon" style="text-align:center;">△</td><td class="cross-icon" style="text-align:center;">✗</td></tr>
+          <tr><td>每日营养统计</td><td class="highlight check-icon" style="text-align:center;">✓</td><td class="cross-icon" style="text-align:center;">✗</td><td class="check-icon" style="text-align:center;">✓</td><td class="cross-icon" style="text-align:center;">✗</td></tr>
+          <tr><td>家庭协同</td><td class="highlight check-icon" style="text-align:center;">✓</td><td class="cross-icon" style="text-align:center;">✗</td><td class="cross-icon" style="text-align:center;">✗</td><td class="cross-icon" style="text-align:center;">✗</td></tr>
+          <tr><td>库存消耗闭环</td><td class="highlight check-icon" style="text-align:center;">✓</td><td class="cross-icon" style="text-align:center;">✗</td><td class="cross-icon" style="text-align:center;">✗</td><td class="cross-icon" style="text-align:center;">✗</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:16px; font-size:12px; color:var(--text-muted);">△ 薄荷健康支持预包装食品和餐厅菜品的营养查询，但不支持根据自定义食材清单分析家常菜。</p>
+  </div>
+</section>
+
+<!-- ═══════════ TECH STACK ═══════════ -->
+<section class="section tech-section">
+  <div class="container">
+    <div class="badge">🛠️ 技术架构</div>
+    <h2 class="section-title">技术选型</h2>
+    <p class="section-desc">现代全栈架构，AI 原生集成。</p>
+    <div class="tech-grid">
+      <div class="tech-card animate-fade-up"><div class="icon">⚛️</div><h5>React + TypeScript</h5><p>前端框架</p></div>
+      <div class="tech-card animate-fade-up" style="transition-delay:0.05s"><div class="icon">🔥</div><h5>Supabase</h5><p>BaaS 数据库 + Auth</p></div>
+      <div class="tech-card animate-fade-up" style="transition-delay:0.1s"><div class="icon">▲</div><h5>Vercel</h5><p>Serverless 部署</p></div>
+      <div class="tech-card animate-fade-up" style="transition-delay:0.15s"><div class="icon">🤖</div><h5>豆包大模型</h5><p>AI 推荐 + 营养分析</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ BUSINESS ═══════════ -->
+<section class="section business-section" id="business">
+  <div class="container">
+    <div class="badge" style="background:rgba(249,115,22,0.15);color:#fdba74;">💰 商业模式</div>
+    <h2 class="section-title">盈利路径</h2>
+    <p class="section-desc">从工具到平台，三阶段商业化。</p>
+    <div class="business-grid">
+      <div class="business-card animate-fade-up">
+        <div class="icon">🆓</div>
+        <h4>免费增值</h4>
+        <p>基础功能免费，高级营养报告、历史趋势分析、家庭多人协同等进阶功能订阅制（¥12/月）。</p>
+      </div>
+      <div class="business-card animate-fade-up" style="transition-delay:0.1s">
+        <div class="icon">🛒</div>
+        <h4>食材电商</h4>
+        <p>缺少食材时一键跳转生鲜电商下单（叮咚买菜、盒马等），按 CPS 分成。转化率预期 8-12%。</p>
+      </div>
+      <div class="business-card animate-fade-up" style="transition-delay:0.2s">
+        <div class="icon">🏥</div>
+        <h4>健康数据</h4>
+        <p>脱敏后的膳食营养数据可对接健康管理平台、保险公司，提供 B2B 数据服务。</p>
+      </div>
+    </div>
+    <div class="metrics-row">
+      <div class="metric-card animate-fade-up"><div class="value">78%</div><div class="label">目标用户痛点命中率</div></div>
+      <div class="metric-card animate-fade-up" style="transition-delay:0.1s"><div class="value">4.2s</div><div class="label">平均营养分析时长</div></div>
+      <div class="metric-card animate-fade-up" style="transition-delay:0.2s"><div class="value">95%</div><div class="label">食材匹配推荐准确率</div></div>
+      <div class="metric-card animate-fade-up" style="transition-delay:0.3s"><div class="value">12%</div><div class="label">预期食材浪费降低</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CTA ═══════════ -->
+<section class="section" style="background:white; text-align:center;">
+  <div class="container">
+    <h2 class="section-title" style="max-width:600px;margin:0 auto 16px;">让每一顿家常菜<br>都吃得明明白白</h2>
+    <p class="section-desc" style="margin:0 auto 36px;">MenuMind · 小灶 — 你的 AI 营养管家</p>
+    <a href="https://www.menumind.top" target="_blank" class="btn-primary" style="display:inline-flex;">
+      🌐 访问线上版本 menumind.top
+    </a>
+    <p style="margin-top:20px; font-size:11px; color:var(--text-muted);">
+      本 Demo 由实际落地项目提炼 · 后端已部署在 Vercel · 数据库使用 Supabase · AI 使用豆包大模型
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="footer">
+  <p>MenuMind · 小灶 — AI 智能营养管家</p>
+  <p class="made">Built with ❤️ and AI · 2026</p>
+</footer>
+
+<script>
+// ═══════════ NAV SCROLL ═══════════
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+// ═══════════ DEMO TABS ═══════════
+document.querySelectorAll('.demo-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.demo-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const screenId = tab.dataset.screen;
+    document.querySelectorAll('.demo-screen-content').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+  });
+});
+
+// ═══════════ SCROLL ANIMATIONS ═══════════
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+document.querySelectorAll('.animate-fade-up').forEach(el => observer.observe(el));
+
+// ═══════════ SMOOTH SCROLL ═══════════
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+</script>
+</body>
+</html>
