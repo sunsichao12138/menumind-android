@@ -8,6 +8,7 @@ import DishDetail from "./pages/DishDetail";
 import Plan from "./pages/Plan";
 import AllDishes from "./pages/AllDishes";
 import Profile from "./pages/Profile";
+import NutritionStats from "./pages/NutritionStats";
 import Auth from "./pages/Auth";
 import SetupProfile from "./pages/SetupProfile";
 import { PlanProvider } from "./context/PlanContext";
@@ -122,6 +123,7 @@ function AppRoutes() {
         <Route index element={<Home />} />
         <Route path="fridge" element={<Fridge />} />
         <Route path="plan" element={<Plan />} />
+        <Route path="nutrition-stats" element={<NutritionStats />} />
         <Route path="profile" element={<Profile />} />
       </Route>
       <Route path="/filters" element={

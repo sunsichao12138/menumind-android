@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Heart, Sparkles, CheckCircle, ShoppingBasket, Plus, Check } from "lucide-react";
+import { ArrowLeft, Heart, Sparkles, CheckCircle, ShoppingBasket, Plus, Check, Flame } from "lucide-react";
+import NutritionCard from "../components/NutritionCard";
 import { cn } from "../lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { usePlan } from "../context/PlanContext";
@@ -12,7 +13,7 @@ import { api } from "../api/client";
 export default function DishDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"ingredients" | "steps">("ingredients");
+  const [activeTab, setActiveTab] = useState<"ingredients" | "steps" | "nutrition">("ingredients");
   const { addToPlan, removeFromPlan, isInPlan } = usePlan();
   const { toggleFavorite, isFavorite } = useFavorites();
   const { addToHistory } = useHistory();
@@ -171,6 +172,19 @@ export default function DishDetail() {
                 <motion.div layoutId="activeTab" className="absolute -bottom-1 left-0 right-0 h-1 bg-primary rounded-full shadow-sm shadow-primary/30" />
               )}
             </button>
+            <button
+              onClick={() => setActiveTab("nutrition")}
+              className={cn(
+                "pb-2 text-xl font-bold transition-all relative flex items-center gap-1.5",
+                activeTab === "nutrition" ? "text-zinc-900" : "text-zinc-300 hover:text-zinc-400"
+              )}
+            >
+              <Flame size={18} />
+              营养
+              {activeTab === "nutrition" && (
+                <motion.div layoutId="activeTab" className="absolute -bottom-1 left-0 right-0 h-1 bg-primary rounded-full shadow-sm shadow-primary/30" />
+              )}
+            </button>
           </div>
 
           {activeTab === "ingredients" ? (
@@ -210,7 +224,7 @@ export default function DishDetail() {
                 </ul>
               </div>
             </div>
-          ) : (
+          ) : activeTab === "steps" ? (
             <div className="space-y-6">
               {(recipe.steps && recipe.steps.length > 0 ? recipe.steps : ['大火快炒，锁住食材水分，保持口感。', '加入调料翻炒均匀。', '出锅装盘即可。']).map((step, index) => (
                 <div key={index} className="flex gap-4">
@@ -223,6 +237,8 @@ export default function DishDetail() {
                 </div>
               ))}
             </div>
+          ) : (
+            <NutritionCard recipeId={recipe.id} />
           )}
         </section>
 

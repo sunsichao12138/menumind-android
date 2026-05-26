@@ -8,6 +8,27 @@ export interface Ingredient {
   suggestions: string[];
 }
 
+export interface NutrientDetail {
+  name: string;
+  amount: string;
+  calories: number;
+  protein: number;
+  fat: number;
+  carbs: number;
+}
+
+export interface NutritionInfo {
+  calories: number;
+  protein: number;
+  fat: number;
+  carbs: number;
+  fiber: number;
+  sodium: number;
+  sugar: number;
+  detail: NutrientDetail[];
+  source: 'ai' | 'manual' | 'api';
+}
+
 export interface Recipe {
   id: string;
   name: string;
@@ -25,4 +46,6 @@ export interface Recipe {
     missing: { name: string; amount: string }[];
   };
   steps?: string[];
+  nutrition?: NutritionInfo;
 }
+

@@ -12,6 +12,7 @@ import profileRouter from "./routes/profile.js";
 import aiRouter from "./routes/ai.js";
 import familiesRouter from "./routes/families.js";
 import ingredientLogsRouter from "./routes/ingredient-logs.js";
+import nutritionRouter from "./routes/nutrition.js";
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use("/api/profile", authMiddleware, profileRouter);
 app.use("/api/ai", authMiddleware, aiRouter);
 app.use("/api/families", authMiddleware, familiesRouter);
 app.use("/api/ingredient-logs", authMiddleware, ingredientLogsRouter);
+app.use("/api/nutrition", authMiddleware, nutritionRouter);
 
 // Health check
 app.get("/api/health", (_req, res) => {
