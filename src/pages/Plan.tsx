@@ -31,14 +31,32 @@ export default function Plan() {
   }
   const [nutritionStats, setNutritionStats] = useState<DailyNutritionStats | null>(null);
   const [nutritionLoading, setNutritionLoading] = useState(false);
+  const [analyzingNutrition, setAnalyzingNutrition] = useState(false);
 
+  const fetchNutritionStats = async () => {
+    try {
+      const data = await api.get<DailyNutritionStats>("/nutrition/daily/stats");
+      setNutritionStats(data);
+      return data;
+    } catch { return null; }
+  };
+
+  // 加载 + 自动分析未分析的菜品
   useEffect(() => {
     if (plannedRecipes.length === 0) { setNutritionStats(null); return; }
     setNutritionLoading(true);
-    api.get<DailyNutritionStats>("/nutrition/daily/stats")
-      .then(setNutritionStats)
-      .catch(() => {})
-      .finally(() => setNutritionLoading(false));
+    fetchNutritionStats().then(async (data) => {
+      setNutritionLoading(false);
+      if (!data?.unanalyzed?.length) return;
+      // 后台逐个分析
+      setAnalyzingNutrition(true);
+      for (const recipe of data.unanalyzed) {
+        try { await api.post(`/nutrition/analyze/${recipe.recipeId}`, {}); } catch {}
+      }
+      // 分析完毕，刷新数据
+      await fetchNutritionStats();
+      setAnalyzingNutrition(false);
+    });
   }, [plannedRecipes.length]); 
   const photoInputRefs = React.useRef<Record<string, HTMLInputElement | null>>({});
 
@@ -329,10 +347,10 @@ export default function Plan() {
         );
       })()}
 
-      {plannedRecipes.length > 0 && nutritionLoading && (
+      {plannedRecipes.length > 0 && (nutritionLoading || analyzingNutrition) && (
         <div className="flex items-center justify-center gap-2 py-3 -mt-4">
           <Loader2 size={14} className="animate-spin text-zinc-300" />
-          <span className="text-[10px] text-zinc-400">加载营养数据...</span>
+          <span className="text-[10px] text-zinc-400">{analyzingNutrition ? "AI 正在分析营养成分..." : "加载营养数据..."}</span>
         </div>
       )}
 
