@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, ArrowRight, Sparkles, Clock, Check, Trash2, X, ChefHat, ShoppingBasket, Loader2, ChevronDown, ChevronUp, Users, User, UserPlus, Camera, MessageSquare, PartyPopper, Flame } from "lucide-react";
+import { Calendar, ArrowRight, Sparkles, Clock, Check, Trash2, X, ChefHat, ShoppingBasket, Loader2, ChevronDown, ChevronUp, Users, User, UserPlus, Camera, MessageSquare, PartyPopper } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { usePlan } from "../context/PlanContext";
 import { cn } from "../lib/utils";
 import { api } from "../api/client";
 import { useFamily } from "../context/FamilyContext";
 import FamilyModal from "../components/FamilyModal";
-import { NutritionInfo } from "../types";
 
 export default function Plan() {
   const navigate = useNavigate();
@@ -247,15 +246,35 @@ export default function Plan() {
       )}
 
       {/* ── 营养概览卡 ── */}
-      {plannedRecipes.length > 0 && nutritionStats && nutritionStats.analyzedCount > 0 && (() => {
-        const ns = nutritionStats;
-        const pCal = ns.totalProtein * 4, fCal = ns.totalFat * 9, cCal = ns.totalCarbs * 4;
+      {plannedRecipes.length > 0 && nutritionStats && (() => {
+        // 按选中菜品过滤汇总，未选中时全部为 0
+        const selectedSet = new Set(selectedIds);
+        const filteredRecipes = selectedSet.size > 0
+          ? nutritionStats.recipes.filter((r: any) => selectedSet.has(r.recipeId))
+          : [];
+
+        const totals = filteredRecipes.reduce((acc: any, r: any) => ({
+          calories: acc.calories + (r.calories || 0),
+          protein: acc.protein + (r.protein || 0),
+          fat: acc.fat + (r.fat || 0),
+          carbs: acc.carbs + (r.carbs || 0),
+          fiber: acc.fiber + (r.fiber || 0),
+          sodium: acc.sodium + (r.sodium || 0),
+        }), { calories: 0, protein: 0, fat: 0, carbs: 0, fiber: 0, sodium: 0 });
+
+        const pCal = totals.protein * 4, fCal = totals.fat * 9, cCal = totals.carbs * 4;
         const total = pCal + fCal + cCal || 1;
         const pPct = Math.round((pCal / total) * 100);
         const fPct = Math.round((fCal / total) * 100);
         const cPct = 100 - pPct - fPct;
-        const calPct = Math.min(Math.round((ns.totalCalories / 2000) * 100), 150);
-        const conic = `conic-gradient(#6366f1 0deg ${pPct*3.6}deg, #f59e0b ${pPct*3.6}deg ${(pPct+fPct)*3.6}deg, #10b981 ${(pPct+fPct)*3.6}deg 360deg)`;
+        const hasData = totals.calories > 0;
+        const conic = hasData
+          ? `conic-gradient(#6366f1 0deg ${pPct*3.6}deg, #f59e0b ${pPct*3.6}deg ${(pPct+fPct)*3.6}deg, #10b981 ${(pPct+fPct)*3.6}deg 360deg)`
+          : `conic-gradient(#e4e4e7 0deg 360deg)`;
+
+        // 未分析提示
+        const unanalyzedSelected = selectedIds.filter(id => !nutritionStats.recipes.find((r: any) => r.recipeId === id));
+
         return (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -271,16 +290,16 @@ export default function Plan() {
                   WebkitMask: 'radial-gradient(farthest-side, transparent 58%, black 59%)',
                 }} />
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-lg font-black text-zinc-900 leading-none">{ns.totalCalories}</span>
+                  <span className={cn("text-lg font-black leading-none", hasData ? "text-zinc-900" : "text-zinc-300")}>{totals.calories}</span>
                   <span className="text-[8px] text-zinc-400 font-bold">kcal</span>
                 </div>
               </div>
-              {/* 数值 */}
+              {/* 三大营养素 */}
               <div className="flex-1 space-y-2">
                 {[
-                  { label: '蛋白质', value: ns.totalProtein, pct: pPct, color: '#6366f1' },
-                  { label: '脂肪', value: ns.totalFat, pct: fPct, color: '#f59e0b' },
-                  { label: '碳水', value: ns.totalCarbs, pct: cPct, color: '#10b981' },
+                  { label: '蛋白质', value: totals.protein, pct: hasData ? pPct : 0, color: '#6366f1' },
+                  { label: '脂肪', value: totals.fat, pct: hasData ? fPct : 0, color: '#f59e0b' },
+                  { label: '碳水', value: totals.carbs, pct: hasData ? cPct : 0, color: '#10b981' },
                 ].map(m => (
                   <div key={m.label} className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: m.color }} />
@@ -288,23 +307,22 @@ export default function Plan() {
                     <div className="flex-1 h-1.5 bg-white/60 rounded-full overflow-hidden">
                       <motion.div initial={{ width: 0 }} animate={{ width: `${m.pct}%` }} transition={{ duration: 0.6 }} className="h-full rounded-full" style={{ backgroundColor: m.color }} />
                     </div>
-                    <span className="text-[10px] font-bold text-zinc-700 w-10 text-right">{m.value}g</span>
+                    <span className={cn("text-[10px] font-bold w-10 text-right", hasData ? "text-zinc-700" : "text-zinc-300")}>{m.value}g</span>
                   </div>
                 ))}
               </div>
             </div>
-            {/* 热量进度 */}
-            <div className="mt-3 flex items-center gap-3">
-              <Flame size={12} className="text-orange-400 flex-shrink-0" />
-              <div className="flex-1 h-1.5 bg-white/50 rounded-full overflow-hidden">
-                <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(calPct, 100)}%` }} transition={{ duration: 0.8 }}
-                  className={cn('h-full rounded-full', calPct > 100 ? 'bg-red-400' : 'bg-gradient-to-r from-orange-400 to-amber-400')} />
-              </div>
-              <span className={cn('text-[10px] font-black', calPct > 100 ? 'text-red-500' : 'text-orange-500')}>{calPct}%</span>
+            {/* 膳食纤维 + 钠 */}
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-[10px] bg-white/70 text-zinc-500 font-bold px-2.5 py-1 rounded-full">🥦 纤维 {totals.fiber}g</span>
+              <span className="text-[10px] bg-white/70 text-zinc-500 font-bold px-2.5 py-1 rounded-full">🧂 钠 {totals.sodium}mg</span>
+              {!hasData && selectedIds.length === 0 && (
+                <span className="text-[9px] text-zinc-400 ml-auto">勾选菜品查看营养</span>
+              )}
             </div>
-            {ns.unanalyzed?.length > 0 && (
+            {unanalyzedSelected.length > 0 && (
               <p className="text-[9px] text-zinc-400 mt-2 text-center">
-                还有 {ns.unanalyzed.length} 道菜品未分析营养 · 进入菜品详情的「营养」Tab 可分析
+                {unanalyzedSelected.length} 道已选菜品未分析营养 · 进入详情的「营养」Tab 可分析
               </p>
             )}
           </motion.div>

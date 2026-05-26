@@ -278,6 +278,8 @@ router.get("/daily/stats", async (req: Request, res: Response) => {
         protein: Number(n.protein) || 0,
         fat: Number(n.fat) || 0,
         carbs: Number(n.carbs) || 0,
+        fiber: Number(n.fiber) || 0,
+        sodium: Number(n.sodium) || 0,
       };
     });
 
